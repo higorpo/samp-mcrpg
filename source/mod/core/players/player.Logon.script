@@ -1,0 +1,499 @@
+/*                                                            ____      _____  _____    ____
+                                                    |\    /| /      /\  |    \ |    \  /
+                                                    | \  / | |      \/  |      |       |
+                                                    |  \/  | |          |____/ |____/  |  ___
+                                                    |      | |      /\  |    | |       |     |
+                                                    |      | \____  \/  |    | |       \_____/
+                                                                        
+                -----------------------------------------------------------------------------------------------------------------
+                |                                                                                                               |
+                |                                                                                                               |
+                |               Nome: Login & Registro                                                                          |
+                |          Descrição: --                                                                                        |
+                |   Última alteração: 27/05/2016 - 13:22                                                                        |
+                |               Type: script                                                                                    |
+                |                                                                                                               |
+                |                                                                                                               |
+                ---------------------------------------------------------------------------------------------------------------*/
+
+// Livrarias necessarias para o funcionamento geral do script.
+#include "inc\YSI\y_hooks"
+
+//-----------------------------------------------------------------------------
+
+// enums
+enum // Enum que guarda o tipamento para ser salvo as pré-variaveis do login/registro para depois serem usadas para efetuar o login/registro verdadeiro.  
+{
+    save_playername,
+    save_password,
+    save_email
+}
+
+
+
+// Variaveis
+
+// Forwards
+forward OnPlayerLogin(playerid);
+forward OnPlayerRegistering();
+
+//-----------------------------------------------------------------------------
+
+hook OnPlayerConnect(playerid)
+{
+    SetTimerEx("OnPlayerLogin", 100, false, "i", playerid); // Timer para conexão do player com o servidor.
+    return 1;
+}
+
+public OnPlayerLogin(playerid)
+{
+
+    /* Seta o nome do player para Convidado_ID.. */
+    new string[MAX_PLAYER_NAME];
+    format(string, sizeof string, "Convidado_%d", playerid);
+    SetPlayerName(playerid, string);
+
+    /* Funções da camera do player. */
+    TogglePlayerSpectating(playerid, 1);
+    InterpolateCameraPos(playerid, 1236.0540, -678.9527, 203.4494, 718.4951, -1967.2180, 63.9535, 40000, CAMERA_MOVE);
+    InterpolateCameraLookAt(playerid, 1235.0613, -678.8381, 202.8643, 719.1404, -1966.4536, 63.5485, 40000, CAMERA_MOVE);
+    SetPVarInt(playerid, "OnCameraLocal", 1);
+    timercam[playerid] = SetTimerEx("OnCameraLocalTimer", 40005, true, "i", playerid);
+
+    /* Textdrawns do sistema de login & outras funções */
+    ShowLogon(playerid, tela_base);
+    ShowLogon(playerid, tela_inicio);
+    return 1; // Retorna a verdadeiro.
+}
+
+hook OnPlayerDisconnect(playerid, reason)
+{
+    KillTimer(timercam[playerid]);
+    ResetAllDadosLogon(playerid);
+    ResetAllDados(playerid);
+    return 1;
+}
+
+hook OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
+{
+    // Login
+    switch(dialogid)
+    {
+        case @lDialog_PlayerName:
+        {
+            if(!response) return 0;
+            if(~strfind(inputtext, ";") || ~strfind(inputtext, "--")) return ShowPlayerDialog(playerid, @lDialog_PlayerName, DIALOG_STYLE_INPUT, "{FF0000}#{FFFFFF} Insira seu nick", 
+            "{FFFFFF}Coloque o nome do seu personagem no jogo, exemplo: \"Higor_Oliveira\".\n{FF0000}Seu nick não pode conter caracteres invalidos.", "Pronto", "");
+
+            if(strlen(inputtext) < 5) return ShowPlayerDialog(playerid, @lDialog_PlayerName, DIALOG_STYLE_INPUT, "{FF0000}#{FFFFFF} Insira seu nick", 
+            "{FFFFFF}Coloque o nome do seu personagem no jogo, exemplo: \"Higor_Oliveira\".\n{FF0000}Seu nick deve ter entre 5 à 21 caracteres", "Pronto", "Sair"); 
+
+            if(strlen(inputtext) > 24) return ShowPlayerDialog(playerid, @lDialog_PlayerName, DIALOG_STYLE_INPUT, "{FF0000}#{FFFFFF} Insira seu nick", 
+            "{FFFFFF}Coloque o nome do seu personagem no jogo, exemplo: \"Higor_Oliveira\".\n{FF0000}Seu nick deve ter entre 5 à 21 caracteres", "Pronto", "Sair"); 
+
+            SetPlayerInfos(playerid, false, textdraw_Playername, inputtext); /* Explicação: Estaremos modificando a variavel de login na qual
+            informa o nick do player, e estaremos colocando o valor do inputtext, que é o que ele digitou na dialog. O "false" significa que 
+            não é nas textdraws de registro, e sim na de login. */
+            SaveInfoLogon(playerid, false, save_playername, inputtext); /* Explicação: Salva as pré-informações de login do player, como está
+            especificado do "false" que significa que não é um registro e sim um login. */
+            
+            return 1;
+        }
+        case @lDialog_Password:
+        {
+            if(!response) return 0;
+            if(~strfind(inputtext, ";") || ~strfind(inputtext, "--")) return ShowPlayerDialog(playerid, @lDialog_Password, DIALOG_STYLE_PASSWORD, "{FF0000}#{FFFFFF} Coloque sua senha", 
+            "{FFFFFF}Coloque a senha que você usou para se registrar no Majestic:\n{FF0000}Sua senha nao pode conter caracteres invalidos...", "Pronto", "");
+
+            if(strlen(inputtext) < 5) return ShowPlayerDialog(playerid, @lDialog_Password, DIALOG_STYLE_PASSWORD, "{FF0000}#{FFFFFF} Coloque sua senha", 
+            "{FFFFFF}Coloque a senha que você usou para se registrar no Majestic:\n{FF0000}Sua senha tem que ter mais do que 5 caracteres.", "Pronto", "");
+
+            if(strlen(inputtext) > 20) return ShowPlayerDialog(playerid, @lDialog_Password, DIALOG_STYLE_PASSWORD, "{FF0000}#{FFFFFF} Coloque sua senha", 
+            "{FFFFFF}Coloque a senha que você usou para se registrar no Majestic:\n{FF0000}A senha nao pode ter mais que 20 caracteres.", "Pronto", "");
+
+            SaveInfoLogon(playerid, false, save_password, inputtext); // Salva os dados digitados pelo player.
+            SetPlayerInfos(playerid, false, textdraw_Password, inputtext); // seta a textdraw conforme a senha.
+
+            return 1;
+        }
+
+
+
+
+        /* registro */
+        case @rDialog_PlayerName:
+        {
+            if(!response) return 0;
+            if(~strfind(inputtext, ";") || ~strfind(inputtext, "--")) return ShowPlayerDialog(playerid, @lDialog_PlayerName, DIALOG_STYLE_INPUT, "{FF0000}#{FFFFFF} Insira seu nick", 
+            "{FFFFFF}Coloque o nome desejado para que seja usado como nome pelo seu personagem.\n\
+            Exemplo: \"Higor_Oliveira\".\n{FF0000}Seu nick não pode conter caracteres invalidos.", "Pronto", "");
+
+            if(strlen(inputtext) < 5) return ShowPlayerDialog(playerid, @rDialog_PlayerName, DIALOG_STYLE_INPUT, "{FF0000}#{FFFFFF} Insira seu nick", 
+            "{FFFFFF}Coloque o nome desejado para que seja usado como nome pelo seu personagem.\n\
+            Exemplo: \"Higor_Oliveira\".\n{FF0000}Seu nick deve ter entre 5 à 21 caracteres", "Pronto", "Sair"); 
+
+            if(strlen(inputtext) > 24) return ShowPlayerDialog(playerid, @rDialog_PlayerName, DIALOG_STYLE_INPUT, "{FF0000}#{FFFFFF} Insira seu nick", 
+            "{FFFFFF}Coloque o nome desejado para que seja usado como nome pelo seu personagem.\n\
+            Exemplo: \"Higor_Oliveira\".\n{FF0000}Seu nick deve ter entre 5 à 21 caracteres", "Pronto", "Sair"); 
+
+
+            /* Verifica se já existe um nick igual */
+            new query[122];
+            mysql_format(mysqlConnect, query, sizeof(query), "SELECT `id` FROM `accounts` WHERE `name` = '%e'", inputtext);
+            mysql_query(mysqlConnect, query);
+
+            if(cache_num_rows() == 0)
+            {
+                // Não existe nenhum usuário com o mesmo nick.
+                SetPlayerInfos(playerid, true, textdraw_Playername, inputtext); 
+                SaveInfoLogon(playerid, true, save_playername, inputtext);
+            }
+            else 
+            {
+                ShowPlayerDialog(playerid, @rDialog_PlayerName, DIALOG_STYLE_INPUT, "{FF0000}#{FFFFFF} Insira seu nick", 
+                    "{FFFFFF}Coloque o nome desejado para que seja usado como nome pelo seu personagem.\n\
+                    Exemplo: \"Higor_Oliveira\".\n{FF0000}O nick digitado já é cadastrado! Por favor, digite outro e tente novamente.", "Pronto", "Sair"); 
+            }
+            return 1;
+        }
+        case @rDialog_Password:
+        {
+            if(!response) return 0;
+            if(~strfind(inputtext, ";") || ~strfind(inputtext, "--")) return ShowPlayerDialog(playerid, @rDialog_Password, DIALOG_STYLE_PASSWORD, "{FF0000}#{FFFFFF} Coloque sua senha", 
+            "{FFFFFF}Coloque uma senha segura & confiavel, de preferencia que somente você saiba-a.\n{FF0000}Sua senha nao pode conter caracteres invalidos...", "Pronto", "");
+
+            if(strlen(inputtext) < 5) return ShowPlayerDialog(playerid, @rDialog_Password, DIALOG_STYLE_PASSWORD, "{FF0000}#{FFFFFF} Coloque sua senha", 
+            "{FFFFFF}Coloque uma senha segura & confiavel, de preferencia que somente você saiba-a.\n{FF0000}Sua senha tem que ter mais do que 5 caracteres.", "Pronto", "");
+
+            if(strlen(inputtext) > 20) return ShowPlayerDialog(playerid, @rDialog_Password, DIALOG_STYLE_PASSWORD, "{FF0000}#{FFFFFF} Coloque sua senha", 
+            "{FFFFFF}Coloque uma senha segura & confiavel, de preferencia que somente você saiba-a.\n{FF0000}A senha nao pode ter mais que 20 caracteres.", "Pronto", "");
+
+            SaveInfoLogon(playerid, true, save_password, inputtext); // Salva os dados digitados pelo player.
+            SetPlayerInfos(playerid, true, textdraw_Password, inputtext); // seta a textdraw conforme a senha.
+            return 1;
+        }
+        case @rDialog_Email:
+        {
+
+            if(!response) return 0;
+            if(~strfind(inputtext, ";") || ~strfind(inputtext, "--")) return ShowPlayerDialog(playerid, @rDialog_Email, DIALOG_STYLE_INPUT, "{FF0000}#{FFFFFF} Coloque um e-mail valido", 
+                "{FFFFFF}Por-favor, coloque um e-mail valido\n{FF0000}E-mail invalido, por-favor digite um e-mail valido:", "Pronto", "Sair");
+            
+            if(strlen(inputtext) < 10) return ShowPlayerDialog(playerid, @rDialog_Email, DIALOG_STYLE_INPUT, "{FF0000}#{FFFFFF} Coloque um e-mail valido", 
+                "{FFFFFF}Por-favor, coloque um e-mail valido\n{FF0000}E-mail pequeno demais, por-favor digite um e-mail valido:", "Pronto", "Sair");
+            
+            if(strlen(inputtext) > 40) return ShowPlayerDialog(playerid, @rDialog_Email, DIALOG_STYLE_INPUT, "{FF0000}#{FFFFFF} Coloque um e-mail valido", 
+                "{FFFFFF}Por-favor, coloque um e-mail valido\n{FF0000}E-mail grande demais, por-favor digite um e-mail valido:", "Pronto", "Sair");
+
+            if(!IsValidMail(inputtext)) return ShowPlayerDialog(playerid, @rDialog_Email, DIALOG_STYLE_INPUT, "{FF0000}#{FFFFFF} Coloque um e-mail valido", 
+                "{FFFFFF}Por-favor, coloque um e-mail valido\n{FF0000}E-mail invalido, por-favor digite um e-mail valido:", "Pronto", "Sair");
+
+            /* Verifica se já existe um e-mail igual */
+            new query[46+40];
+            mysql_format(mysqlConnect, query, sizeof(query), "SELECT `id` FROM `accounts` WHERE `email` = '%e'", inputtext);
+            mysql_query(mysqlConnect, query);
+
+            if(cache_num_rows() == 0)
+            {
+                // Não existe nenhum usuário com o mesmo nick.
+                new string[41];
+                strmid(string, inputtext, 0, strfind(inputtext, "@"));
+
+                SetPlayerInfos(playerid, true, textdraw_Email, string); 
+                SaveInfoLogon(playerid, true, save_email, inputtext);
+            }
+            else 
+            {
+                ShowPlayerDialog(playerid, @rDialog_Email, DIALOG_STYLE_INPUT, "{FF0000}#{FFFFFF} Coloque um e-mail valido", 
+                    "{FFFFFF}Por-favor, coloque um e-mail valido\n{FF0000}Este e-mail já está sendo usado:", "Pronto", "Sair");
+            }
+
+            return 1;
+        }
+    }
+    return 1;
+}
+
+//-----------------------------------------------------------------------------
+
+SaveInfoLogon(playerid, bool:register = false, info_id, text[]) // Função que irá salvar oque o player digitou nas pré-variaveis para depois ser registro/logado.
+{
+    switch(info_id)
+    {
+        case save_playername:
+        {
+            if(register == true)
+            {
+                // Dados do registro.
+                SetPVarString(playerid, "register@playername", text);
+                return 1;
+            }
+            else 
+            {
+                SetPVarString(playerid, "login@playername", text);
+                // Dados do login.
+            }
+        }
+        case save_password:
+        {
+            if(register == true)
+            {
+                // Dados do registro.
+                SetPVarString(playerid, "register@password", text);
+                return 1;
+            }
+            else 
+            {
+                // Dados do login.
+                SetPVarString(playerid, "login@password", text);
+            }
+        }
+        case save_email:
+        {
+            SetPVarString(playerid, "register@email", text);
+            return 1;
+        }
+    }
+    return 1;
+}
+
+CreateAccount(playerid, rPass[], rEmail[]) // Função que cria uma nova conta.
+{
+    new query[206+200];
+    mysql_format(mysqlConnect, query, sizeof(query), "INSERT INTO `accounts` (`name`, `password`, `email`, `firstip`, `lastip`, `serial`, `registerdate`, `lastlogin`) VALUES ('%e', sha1('%e'), '%e', '%e', '%e', '%e', '%d', '%d');", 
+        // Valores.
+        GetPlayerName(playerid),
+        rPass,
+        rEmail,
+        GetPlayerIp(playerid),
+        GetPlayerIp(playerid),
+        GetPlayerSerial(playerid),
+        gettime(),
+        gettime());
+    mysql_pquery(mysqlConnect, query, "OnPlayerRegistering", "");  
+    return 1;
+}
+
+public OnPlayerRegistering()
+{
+
+    new query[200];
+    mysql_format(mysqlConnect, query, sizeof(query), "INSERT INTO `accounts_data` (`id_player`, `posX`, `posY`, `posZ`, `ang`, `health`, `armour`, `money`, `skin`) VALUES ('%d', '%f', '%f', '%f', '%f', '100', '0', '1000', '%d');", 
+        // Valores.
+        cache_insert_id(),
+        0.0, // Posições de inicio aqui
+        0.0, // Posições de inicio aqui
+        0.0, // Posições de inicio aqui
+        0.0, // Posições de inicio aqui
+        22);
+    mysql_pquery(mysqlConnect, query);  
+
+    return 1;
+}
+
+
+//-----------------------------------------------------------------------------
+
+public VerifyIfCnfMail(playerid)
+{
+    new query[92+21], token[21];
+    GetPVarString(playerid, "codigo_cfn__mail", token, sizeof(token));
+
+    mysql_format(mysqlConnect, query, sizeof(query), "SELECT `token_confirmed` FROM `reg_confirm` WHERE `token_confirmed` = '%e' AND `confirm` = '1'", token);
+    mysql_query(mysqlConnect, query);
+
+    if(cache_num_rows() == 1)
+    {
+        // Token confirmado
+        KillTimer(timer@codigo_cfn__mail[playerid]);
+
+        mysql_format(mysqlConnect, query, sizeof(query), "DELETE FROM `reg_confirm` WHERE `reg_confirm`.`token_confirmed` = '%e'", token);
+        mysql_query(mysqlConnect, query, false);
+
+        PlayerTextDrawHide(playerid, logonRegister_two@cnfMail[10]);
+        PlayerTextDrawDestroy(playerid, logonRegister_two@cnfMail[10]);
+
+        logonRegister_two@cnfMail[10] = CreatePlayerTextDraw(playerid,399.000000, 185.000000, "Aguarde.~n~Estamos carregando as informacoes");
+        PlayerTextDrawAlignment(playerid,logonRegister_two@cnfMail[10], 2);
+        PlayerTextDrawBackgroundColor(playerid,logonRegister_two@cnfMail[10], 255);
+        PlayerTextDrawFont(playerid,logonRegister_two@cnfMail[10], 2);
+        PlayerTextDrawLetterSize(playerid,logonRegister_two@cnfMail[10], 0.170000, 1.000000);
+        PlayerTextDrawColor(playerid,logonRegister_two@cnfMail[10], 1970828799);
+        PlayerTextDrawSetOutline(playerid,logonRegister_two@cnfMail[10], 0);
+        PlayerTextDrawSetProportional(playerid,logonRegister_two@cnfMail[10], 1);
+        PlayerTextDrawSetShadow(playerid,logonRegister_two@cnfMail[10], 0);
+        PlayerTextDrawSetSelectable(playerid,logonRegister_two@cnfMail[10], 0);
+
+        PlayerTextDrawShow(playerid, logonRegister_two@cnfMail[10]);
+
+
+
+        /* Timer para mandar para a proxima etapa. */
+        SetPVarInt(playerid, "confirmou__email@player", 1);
+        SetTimerEx("Load@__nextEtapaRegister", 5000, false, "i", playerid);
+    }
+    return 1;
+}
+
+public Load@__nextEtapaRegister(playerid)
+{
+    DestroyPlayerTextdrawsLogon(playerid, tela_register@confirmmail); // Destroi as textdraws 
+    DeletePVar(playerid, "codigo_cfn__mail"); // Destroí o código de ativação
+    return 1;
+}
+
+public LoadPlayerAccount(playerid)
+{
+    InsertPlayerLog(playerid);
+
+    /* Infos dos players */
+    cache_get_field_content(0, "email", pInfo[playerid][email]);
+    cache_get_field_content(0, "firstip", pInfo[playerid][first_ip]);
+    format(pInfo[playerid][last_ip], 20, "%s", GetPlayerIp(playerid));
+    cache_get_field_content(0, "serial", pInfo[playerid][p_serial]);
+    cache_get_field_content(0, "registerdate", pInfo[playerid][registerdate]);
+    pInfo[playerid][lastlogin] = gettime();
+
+    /* Atualiza algumas informações do player */
+    new query[76+20+24];
+    mysql_format(mysqlConnect, query, sizeof(query), "UPDATE `accounts` SET `lastip` = '%e',`lastlogin` = '%d',`logado`='1' WHERE `name` = '%e'", pInfo[playerid][last_ip], pInfo[playerid][lastlogin], GetPlayerName(playerid));
+    mysql_pquery(mysqlConnect, query);
+
+
+    /* Dados dos players */
+    pData[playerid][health] = cache_get_field_content_float(0, "health");
+    pData[playerid][armour] = cache_get_field_content_float(0, "armour");
+
+    pData[playerid][money] = cache_get_field_content_int(0, "money");
+    pData[playerid][skin] = cache_get_field_content_int(0, "skin");
+
+    pData[playerid][posX] = cache_get_field_content_float(0, "posX");
+    pData[playerid][posY] = cache_get_field_content_float(0, "posY");
+    pData[playerid][posZ] = cache_get_field_content_float(0, "posZ");
+    pData[playerid][ang] = cache_get_field_content_float(0, "ang");
+
+    /* accounts_rank - Rank dos players */
+    aInfo[playerid][adminLvl] = cache_get_field_content_int(0, "adminLvl");
+    if(aInfo[playerid][adminLvl] > 0)
+    {
+        cache_get_field_content(0, "adminpass", aInfo[playerid][adminpass]);
+        aInfo[playerid][enter_date] = cache_get_field_content_int(0, "data");
+    }
+
+
+    /* Esconde todas as textdraws de login. */
+    HideLogon(playerid, tela_base);
+    HideLogon(playerid, tela_inicio);
+    HideLogon(playerid, tela_community);
+    HideLogon(playerid, tela_register);
+    HideLogon(playerid, tela_register@lastregisters);
+    HideLogon(playerid, tela_register@confirmmail);
+    HideLogon(playerid, tela_register@inputdados);
+    HideLogon(playerid, tela_credits);
+
+    DestroyPlayerTextdrawsLogon(playerid, tela_base);
+    DestroyPlayerTextdrawsLogon(playerid, tela_inicio);
+    DestroyPlayerTextdrawsLogon(playerid, tela_community);
+    DestroyPlayerTextdrawsLogon(playerid, tela_register);
+    DestroyPlayerTextdrawsLogon(playerid, tela_register@lastregisters);
+    DestroyPlayerTextdrawsLogon(playerid, tela_register@confirmmail);
+    DestroyPlayerTextdrawsLogon(playerid, tela_register@inputdados);
+    DestroyPlayerTextdrawsLogon(playerid, tela_credits);
+
+    KillTimer(timercam[playerid]);
+    TogglePlayerSpectating(playerid, 0);
+    SetPlayerDados(playerid);
+    return 1;
+}
+
+public OnCameraLocalTimer(playerid) // Local das cameras.. 
+{
+    if(GetPVarInt(playerid, "OnCameraLocal") == 1)
+    {
+        InterpolateCameraPos(playerid, 718.4951, -1967.2180, 63.9535, 1147.3031, -1714.4382, 34.1540, 40000, CAMERA_MOVE);
+        InterpolateCameraLookAt(playerid, 719.1404, -1966.4536, 63.5485, 1147.3816, -1715.4353, 33.8840, 40000, CAMERA_MOVE);
+        SetPVarInt(playerid, "OnCameraLocal", 2);
+        return 1;
+    }
+    if(GetPVarInt(playerid, "OnCameraLocal") == 2)
+    {
+        InterpolateCameraPos(playerid, 1147.3031, -1714.4382, 34.1540, 1895.8823, -1260.3832, 68.2376, 40000, CAMERA_MOVE);
+        InterpolateCameraLookAt(playerid, 1147.3816, -1715.4353, 33.8840, 1896.7061, -1259.8153, 67.5675, 40000, CAMERA_MOVE);
+        SetPVarInt(playerid, "OnCameraLocal", 3);
+        return 1;
+    }
+    if(GetPVarInt(playerid, "OnCameraLocal") == 3)
+    {
+        SetPVarInt(playerid, "OnCameraLocal", 0);
+        KillTimer(timercam[playerid]);
+        return 1;
+    }
+    return 1;
+}
+
+ResetAllDadosLogon(playerid)
+{
+    DeletePVar(playerid, "login@playername");
+    DeletePVar(playerid, "login@password");
+    DeletePVar(playerid, "login@preencheuNick");
+    DeletePVar(playerid, "login@preencheuSenha");
+    DeletePVar(playerid, "OnCameraLocal");
+
+    pInfo[playerid][errorPass] = 0;
+    return 1;
+}
+
+ResetAllDados(playerid)
+{
+    for (new p; p < sizeof(pInfo[]); ++p) //Reseta a array do player, evita alguns bugs
+    {
+        pInfo[playerid][playerInfo: p] = 0;
+    }
+
+    for (new p; p < sizeof(pData[]); ++p) //Reseta a array do player, evita alguns bugs
+    {
+        pData[playerid][playerData: p] = 0;
+    }
+    return 1;
+}
+
+SetPlayerDados(playerid)
+{
+    if(pData[playerid][spawntype] == false) //Faz a verificação.
+    {
+        SpawnPlayer(playerid); //Spawna o player.
+
+        if(pData[playerid][posX] == 0.0 && pData[playerid][posX] == 0.0 && pData[playerid][posX] == 0.0)
+        {
+            SetPlayerPos(playerid, 3.37877, -2.47362, 2.10650);
+            SetPlayerFacingAngle(playerid, 0.0); 
+        }
+        else 
+        {
+            SetPlayerPos(playerid, pData[playerid][posX], pData[playerid][posY], pData[playerid][posZ]);
+            SetPlayerFacingAngle(playerid, pData[playerid][ang]);
+        }
+    }
+    else
+    {
+
+    }
+
+
+    pInfo[playerid][logado] = true;
+    SetPlayerHealth(playerid, pData[playerid][health]);
+    SetPlayerArmour(playerid, pData[playerid][armour]);
+    GivePlayerMoney(playerid, pData[playerid][money]);
+    SetPlayerSkin(playerid, pData[playerid][skin]);
+    return 1;
+}
+
+IsValidMail(mail[]) // By: Drakon, modificado por HaRdiiZin
+{
+    for(new i; mail[i]; ++i) switch(mail[i])
+    {
+        case 'A' .. 'Z', 'a' .. 'z', '@', '_', '-', '0' .. '9', '.' : continue;
+        default: return false;
+    }
+    return true;
+}

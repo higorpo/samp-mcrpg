@@ -1,0 +1,33 @@
+/* Enums e variaveis */
+new yeeah__mysqlConnect; // Handle de conexão do mySql.
+
+
+//-----------------------------------------------------------------------------
+
+
+yeeah__mysql(option) // Função
+{
+    if(option == connect) /*   Caso for: mysql(connect);   */
+    {
+        #include "cfg\yeeah.Config.ini"
+        yeeah__mysqlConnect = mysql_connect(yeeah__configsMySQL[0][host], yeeah__configsMySQL[0][user], yeeah__configsMySQL[0][database], yeeah__configsMySQL[0][password], yeeah__configsMySQL[0][port], yeeah__configsMySQL[0][reconnect], yeeah__configsMySQL[0][pool_size]);
+        if(mysql_errno(yeeah__mysqlConnect) != 0)
+        {
+            printfc(CONSOLE_RED, "* YEEAH ERROR: O banco de dados '%s' nao foi encontrado!", yeeah__configsMySQL[0][database]);
+            SendRconCommand("changemode server.Error");
+            return 0;
+        }
+        else
+        {
+            printfc(CONSOLE_GREEN, "* YEEAH SUCESS: O banco de dados foi encontrado com sucesso.\n\
+                Informacoes da conexao: Banco de dados '%s' - User '%s'", yeeah__configsMySQL[0][database], yeeah__configsMySQL[0][user]);
+            return 1;
+        }
+    }
+    else if(option == close)
+    {
+        mysql_close(yeeah__mysqlConnect);
+        printfc(CONSOLE_BLUE, "* YEEAH SUCESS: O banco de dados '%s' foi desconectado.", yeeah__configsMySQL[0][database]);
+    }
+    return 1;
+}

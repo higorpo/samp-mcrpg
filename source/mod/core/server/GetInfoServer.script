@@ -1,0 +1,436 @@
+/*                                                            ____      _____  _____    ____
+                                                    |\    /| /      /\  |    \ |    \  /
+                                                    | \  / | |      \/  |      |       |
+                                                    |  \/  | |          |____/ |____/  |  ___
+                                                    |      | |      /\  |    | |       |     |
+                                                    |      | \____  \/  |    | |       \_____/
+                                                                        
+                -----------------------------------------------------------------------------------------------------------------
+                |                                                                                                               |
+                |                                                                                                               |
+                |               Nome: Login & Registro                                                                          |
+                |          Descrição: --                                                                                        |
+                |   Última alteração: 27/05/2016 - 13:22                                                                        |
+                |               Type: script                                                                                    |
+                |                                                                                                               |
+                |                                                                                                               |
+                ---------------------------------------------------------------------------------------------------------------*/
+
+// Livrarias necessarias para o funcionamento geral do script.
+#include "inc\YSI\y_hooks"
+
+//-----------------------------------------------------------------------------
+
+// enums
+enum get_infos_server_DATA
+{
+    quant_Accounts,
+    quant_Houses,
+    quant_Business
+}
+
+enum get_lasted_registers
+{
+    name[24],
+    skin
+};
+
+// variaveis
+new GetInfoServerData[get_infos_server_DATA];
+new GetInfoLastRegister[3][get_lasted_registers];
+
+// textdraws
+new Text:GetInfoServer_Logon[22];
+
+//-----------------------------------------------------------------------------
+
+hook OnGameModeInit()
+{
+    printc(CONSOLE_GREY, "-> Carregando as informacoes do servidor.");
+    LoadInfoServer();
+    return 1;
+}
+
+//-----------------------------------------------------------------------------
+
+CreateTextdrawsInfoServer()
+{
+    GetInfoServer_Logon[0] = TextDrawCreate(360.000000, 312.000000, "_");
+    TextDrawBackgroundColor(GetInfoServer_Logon[0], 255);
+    TextDrawFont(GetInfoServer_Logon[0], 1);
+    TextDrawLetterSize(GetInfoServer_Logon[0], 0.500000, 6.000000);
+    TextDrawColor(GetInfoServer_Logon[0], -1);
+    TextDrawSetOutline(GetInfoServer_Logon[0], 0);
+    TextDrawSetProportional(GetInfoServer_Logon[0], 1);
+    TextDrawSetShadow(GetInfoServer_Logon[0], 1);
+    TextDrawUseBox(GetInfoServer_Logon[0], 1);
+    TextDrawBoxColor(GetInfoServer_Logon[0], -757539073);
+    TextDrawTextSize(GetInfoServer_Logon[0], 60.000000, 0.000000);
+    TextDrawSetSelectable(GetInfoServer_Logon[0], 0);
+
+    GetInfoServer_Logon[1] = TextDrawCreate(580.000000, 272.000000, "_");
+    TextDrawBackgroundColor(GetInfoServer_Logon[1], 255);
+    TextDrawFont(GetInfoServer_Logon[1], 1);
+    TextDrawLetterSize(GetInfoServer_Logon[1], 0.500000, 10.460000);
+    TextDrawColor(GetInfoServer_Logon[1], -1);
+    TextDrawSetOutline(GetInfoServer_Logon[1], 0);
+    TextDrawSetProportional(GetInfoServer_Logon[1], 1);
+    TextDrawSetShadow(GetInfoServer_Logon[1], 1);
+    TextDrawUseBox(GetInfoServer_Logon[1], 1);
+    TextDrawBoxColor(GetInfoServer_Logon[1], -639704065);
+    TextDrawTextSize(GetInfoServer_Logon[1], 357.000000, 0.000000);
+    TextDrawSetSelectable(GetInfoServer_Logon[1], 0);
+
+    GetInfoServer_Logon[2] = TextDrawCreate(294.000000, 263.500000, "I");
+    TextDrawBackgroundColor(GetInfoServer_Logon[2], 255);
+    TextDrawFont(GetInfoServer_Logon[2], 1);
+    TextDrawLetterSize(GetInfoServer_Logon[2], 25.000000, 2.700000);
+    TextDrawColor(GetInfoServer_Logon[2], 1388462847);
+    TextDrawSetOutline(GetInfoServer_Logon[2], 0);
+    TextDrawSetProportional(GetInfoServer_Logon[2], 1);
+    TextDrawSetShadow(GetInfoServer_Logon[2], 0);
+    TextDrawSetSelectable(GetInfoServer_Logon[2], 0);
+
+    GetInfoServer_Logon[3] = TextDrawCreate(430.000000, 272.000000, "_");
+    TextDrawBackgroundColor(GetInfoServer_Logon[3], 255);
+    TextDrawFont(GetInfoServer_Logon[3], 1);
+    TextDrawLetterSize(GetInfoServer_Logon[3], 0.500000, 1.059998);
+    TextDrawColor(GetInfoServer_Logon[3], -1);
+    TextDrawSetOutline(GetInfoServer_Logon[3], 0);
+    TextDrawSetProportional(GetInfoServer_Logon[3], 1);
+    TextDrawSetShadow(GetInfoServer_Logon[3], 1);
+    TextDrawUseBox(GetInfoServer_Logon[3], 1);
+    TextDrawBoxColor(GetInfoServer_Logon[3], 1657034410);
+    TextDrawTextSize(GetInfoServer_Logon[3], 357.000000, 0.000000);
+    TextDrawSetSelectable(GetInfoServer_Logon[3], 0);
+
+
+
+
+    // Quantidade de usuários criados.
+    GetInfoServer_Logon[4] = TextDrawCreate(364.000000, 272.000000, "ultimos usuarios cadastrados");
+    TextDrawBackgroundColor(GetInfoServer_Logon[4], 255);
+    TextDrawFont(GetInfoServer_Logon[4], 2);
+    TextDrawLetterSize(GetInfoServer_Logon[4], 0.180000, 0.899999);
+    TextDrawColor(GetInfoServer_Logon[4], -1);
+    TextDrawSetOutline(GetInfoServer_Logon[4], 0);
+    TextDrawSetProportional(GetInfoServer_Logon[4], 1);
+    TextDrawSetShadow(GetInfoServer_Logon[4], 0);
+    TextDrawSetSelectable(GetInfoServer_Logon[4], 0);
+
+    GetInfoServer_Logon[5] = TextDrawCreate(66.000000, 318.000000, "LD_OTB2:Ric1");
+    TextDrawBackgroundColor(GetInfoServer_Logon[5], 255);
+    TextDrawFont(GetInfoServer_Logon[5], 4);
+    TextDrawLetterSize(GetInfoServer_Logon[5], 0.500000, 1.000000);
+    TextDrawColor(GetInfoServer_Logon[5], -1);
+    TextDrawSetOutline(GetInfoServer_Logon[5], 0);
+    TextDrawSetProportional(GetInfoServer_Logon[5], 1);
+    TextDrawSetShadow(GetInfoServer_Logon[5], 1);
+    TextDrawUseBox(GetInfoServer_Logon[5], 1);
+    TextDrawBoxColor(GetInfoServer_Logon[5], 255);
+    TextDrawTextSize(GetInfoServer_Logon[5], 29.000000, 42.000000);
+    TextDrawSetSelectable(GetInfoServer_Logon[5], 0);
+
+    GetInfoServer_Logon[6] = TextDrawCreate(94.000000, 326.000000, "0"); // Quantidade de players criados.
+    TextDrawBackgroundColor(GetInfoServer_Logon[6], 255);
+    TextDrawFont(GetInfoServer_Logon[6], 2);
+    TextDrawLetterSize(GetInfoServer_Logon[6], 0.219999, 1.699998);
+    TextDrawColor(GetInfoServer_Logon[6], 562226943);
+    TextDrawSetOutline(GetInfoServer_Logon[6], 0);
+    TextDrawSetProportional(GetInfoServer_Logon[6], 1);
+    TextDrawSetShadow(GetInfoServer_Logon[6], 0);
+    TextDrawSetSelectable(GetInfoServer_Logon[6], 0);
+
+    GetInfoServer_Logon[7] = TextDrawCreate(94.000000, 341.000000, "usuarios registrados~n~no servidor no momento.");
+    TextDrawBackgroundColor(GetInfoServer_Logon[7], 255);
+    TextDrawFont(GetInfoServer_Logon[7], 2);
+    TextDrawLetterSize(GetInfoServer_Logon[7], 0.129998, 0.899998);
+    TextDrawColor(GetInfoServer_Logon[7], 811972095);
+    TextDrawSetOutline(GetInfoServer_Logon[7], 0);
+    TextDrawSetProportional(GetInfoServer_Logon[7], 1);
+    TextDrawSetShadow(GetInfoServer_Logon[7], 0);
+    TextDrawSetSelectable(GetInfoServer_Logon[7], 0);
+
+    GetInfoServer_Logon[8] = TextDrawCreate(85.000000, 340.000000, "_");
+    TextDrawBackgroundColor(GetInfoServer_Logon[8], 255);
+    TextDrawFont(GetInfoServer_Logon[8], 1);
+    TextDrawLetterSize(GetInfoServer_Logon[8], 0.500000, 0.559997);
+    TextDrawColor(GetInfoServer_Logon[8], -1);
+    TextDrawSetOutline(GetInfoServer_Logon[8], 0);
+    TextDrawSetProportional(GetInfoServer_Logon[8], 1);
+    TextDrawSetShadow(GetInfoServer_Logon[8], 1);
+    TextDrawUseBox(GetInfoServer_Logon[8], 1);
+    TextDrawBoxColor(GetInfoServer_Logon[8], 962706943);
+    TextDrawTextSize(GetInfoServer_Logon[8], 78.000000, 0.000000);
+    TextDrawSetSelectable(GetInfoServer_Logon[8], 0);
+
+    GetInfoServer_Logon[9] = TextDrawCreate(82.000000, 340.000000, "_");
+    TextDrawBackgroundColor(GetInfoServer_Logon[9], 255);
+    TextDrawFont(GetInfoServer_Logon[9], 1);
+    TextDrawLetterSize(GetInfoServer_Logon[9], 0.500000, 0.559997);
+    TextDrawColor(GetInfoServer_Logon[9], -1);
+    TextDrawSetOutline(GetInfoServer_Logon[9], 0);
+    TextDrawSetProportional(GetInfoServer_Logon[9], 1);
+    TextDrawSetShadow(GetInfoServer_Logon[9], 1);
+    TextDrawUseBox(GetInfoServer_Logon[9], 1);
+    TextDrawBoxColor(GetInfoServer_Logon[9], 1267138559);
+    TextDrawTextSize(GetInfoServer_Logon[9], 75.000000, 0.000000);
+    TextDrawSetSelectable(GetInfoServer_Logon[9], 0);
+
+
+
+    // Quantidade de casas criadas.
+    GetInfoServer_Logon[10] = TextDrawCreate(180.000000, 327.000000, "casaicon");
+    TextDrawBackgroundColor(GetInfoServer_Logon[10], 0);
+    TextDrawFont(GetInfoServer_Logon[10], 5);
+    TextDrawLetterSize(GetInfoServer_Logon[10], 0.500000, 1.000000);
+    TextDrawColor(GetInfoServer_Logon[10], -1);
+    TextDrawSetOutline(GetInfoServer_Logon[10], 0);
+    TextDrawSetProportional(GetInfoServer_Logon[10], 1);
+    TextDrawSetShadow(GetInfoServer_Logon[10], 1);
+    TextDrawUseBox(GetInfoServer_Logon[10], 1);
+    TextDrawBoxColor(GetInfoServer_Logon[10], 255);
+    TextDrawTextSize(GetInfoServer_Logon[10], 30.000000, 28.000000);
+    TextDrawSetPreviewModel( GetInfoServer_Logon[10], 1272);
+    TextDrawSetPreviewRot( GetInfoServer_Logon[10], 3.000000, 0.000000, 0.000000, 1.000000);
+    TextDrawSetSelectable(GetInfoServer_Logon[10], 0);
+
+    GetInfoServer_Logon[11] = TextDrawCreate(211.000000, 326.000000, "0"); // Numero de casas criadas.
+    TextDrawBackgroundColor(GetInfoServer_Logon[11], 255);
+    TextDrawFont(GetInfoServer_Logon[11], 2);
+    TextDrawLetterSize(GetInfoServer_Logon[11], 0.219999, 1.699998);
+    TextDrawColor(GetInfoServer_Logon[11], 562226943);
+    TextDrawSetOutline(GetInfoServer_Logon[11], 0);
+    TextDrawSetProportional(GetInfoServer_Logon[11], 1);
+    TextDrawSetShadow(GetInfoServer_Logon[11], 0);
+    TextDrawSetSelectable(GetInfoServer_Logon[11], 0);
+
+    GetInfoServer_Logon[12] = TextDrawCreate(211.000000, 341.000000, "casas criadas.");
+    TextDrawBackgroundColor(GetInfoServer_Logon[12], 255);
+    TextDrawFont(GetInfoServer_Logon[12], 2);
+    TextDrawLetterSize(GetInfoServer_Logon[12], 0.129997, 0.899998);
+    TextDrawColor(GetInfoServer_Logon[12], 811972095);
+    TextDrawSetOutline(GetInfoServer_Logon[12], 0);
+    TextDrawSetProportional(GetInfoServer_Logon[12], 1);
+    TextDrawSetShadow(GetInfoServer_Logon[12], 0);
+    TextDrawSetSelectable(GetInfoServer_Logon[12], 0);
+
+
+
+    // Quantidade de empresas.
+    GetInfoServer_Logon[13] = TextDrawCreate(273.000000, 327.000000, "empresaicon");
+    TextDrawBackgroundColor(GetInfoServer_Logon[13], 0);
+    TextDrawFont(GetInfoServer_Logon[13], 5);
+    TextDrawLetterSize(GetInfoServer_Logon[13], 0.500000, 1.000000);
+    TextDrawColor(GetInfoServer_Logon[13], -1);
+    TextDrawSetOutline(GetInfoServer_Logon[13], 0);
+    TextDrawSetProportional(GetInfoServer_Logon[13], 1);
+    TextDrawSetShadow(GetInfoServer_Logon[13], 1);
+    TextDrawUseBox(GetInfoServer_Logon[13], 1);
+    TextDrawBoxColor(GetInfoServer_Logon[13], 255);
+    TextDrawTextSize(GetInfoServer_Logon[13], 24.000000, 29.000000);
+    TextDrawSetPreviewModel( GetInfoServer_Logon[13], 1212);
+    TextDrawSetPreviewRot( GetInfoServer_Logon[13], 41.000000, 4.000000, 23.000000, 1.000000);
+    TextDrawSetSelectable(GetInfoServer_Logon[13], 0);
+
+    GetInfoServer_Logon[14] = TextDrawCreate(297.000000, 326.000000, "0"); // Quantidade de empresas criadas.
+    TextDrawBackgroundColor(GetInfoServer_Logon[14], 255);
+    TextDrawFont(GetInfoServer_Logon[14], 2);
+    TextDrawLetterSize(GetInfoServer_Logon[14], 0.219999, 1.699998);
+    TextDrawColor(GetInfoServer_Logon[14], 562226943);
+    TextDrawSetOutline(GetInfoServer_Logon[14], 0);
+    TextDrawSetProportional(GetInfoServer_Logon[14], 1);
+    TextDrawSetShadow(GetInfoServer_Logon[14], 0);
+    TextDrawSetSelectable(GetInfoServer_Logon[14], 0);
+
+    GetInfoServer_Logon[15] = TextDrawCreate(297.000000, 341.000000, "empresas criadas.");
+    TextDrawBackgroundColor(GetInfoServer_Logon[15], 255);
+    TextDrawFont(GetInfoServer_Logon[15], 2);
+    TextDrawLetterSize(GetInfoServer_Logon[15], 0.129997, 0.899998);
+    TextDrawColor(GetInfoServer_Logon[15], 811972095);
+    TextDrawSetOutline(GetInfoServer_Logon[15], 0);
+    TextDrawSetProportional(GetInfoServer_Logon[15], 1);
+    TextDrawSetShadow(GetInfoServer_Logon[15], 0);
+    TextDrawSetSelectable(GetInfoServer_Logon[15], 0);
+
+
+
+    // Bonecos
+    GetInfoServer_Logon[16] = TextDrawCreate(415.000000, 286.000000, "boneco_2");
+    TextDrawBackgroundColor(GetInfoServer_Logon[16], 0);
+    TextDrawFont(GetInfoServer_Logon[16], 5);
+    TextDrawLetterSize(GetInfoServer_Logon[16], 0.500000, 1.000000);
+    TextDrawColor(GetInfoServer_Logon[16], -1);
+    TextDrawSetOutline(GetInfoServer_Logon[16], 0);
+    TextDrawSetProportional(GetInfoServer_Logon[16], 1);
+    TextDrawSetShadow(GetInfoServer_Logon[16], 1);
+    TextDrawUseBox(GetInfoServer_Logon[16], 1);
+    TextDrawBoxColor(GetInfoServer_Logon[16], 255);
+    TextDrawTextSize(GetInfoServer_Logon[16], 60.000000, 69.000000);
+    TextDrawSetPreviewModel( GetInfoServer_Logon[16], 4);
+    TextDrawSetPreviewRot( GetInfoServer_Logon[16], -16.000000, 0.000000, -40.000000, 1.000000);
+    TextDrawSetSelectable(GetInfoServer_Logon[16], 0);
+
+    GetInfoServer_Logon[17] = TextDrawCreate(446.000000, 286.000000, "boneco_3");
+    TextDrawBackgroundColor(GetInfoServer_Logon[17], 0);
+    TextDrawFont(GetInfoServer_Logon[17], 5);
+    TextDrawLetterSize(GetInfoServer_Logon[17], 0.500000, 1.000000);
+    TextDrawColor(GetInfoServer_Logon[17], -1);
+    TextDrawSetOutline(GetInfoServer_Logon[17], 0);
+    TextDrawSetProportional(GetInfoServer_Logon[17], 1);
+    TextDrawSetShadow(GetInfoServer_Logon[17], 1);
+    TextDrawUseBox(GetInfoServer_Logon[17], 1);
+    TextDrawBoxColor(GetInfoServer_Logon[17], 255);
+    TextDrawTextSize(GetInfoServer_Logon[17], 60.000000, 69.000000);
+    TextDrawSetPreviewModel( GetInfoServer_Logon[17], 6);
+    TextDrawSetPreviewRot( GetInfoServer_Logon[17], -16.000000, 0.000000, 20.000000, 1.000000);
+    TextDrawSetSelectable(GetInfoServer_Logon[17], 0);
+
+    GetInfoServer_Logon[18] = TextDrawCreate(428.000000, 286.000000, "boneco_1");
+    TextDrawBackgroundColor(GetInfoServer_Logon[18], 0);
+    TextDrawFont(GetInfoServer_Logon[18], 5);
+    TextDrawLetterSize(GetInfoServer_Logon[18], 0.500000, 1.000000);
+    TextDrawColor(GetInfoServer_Logon[18], -1);
+    TextDrawSetOutline(GetInfoServer_Logon[18], 0);
+    TextDrawSetProportional(GetInfoServer_Logon[18], 1);
+    TextDrawSetShadow(GetInfoServer_Logon[18], 1);
+    TextDrawUseBox(GetInfoServer_Logon[18], 1);
+    TextDrawBoxColor(GetInfoServer_Logon[18], 255);
+    TextDrawTextSize(GetInfoServer_Logon[18], 64.000000, 73.000000);
+    TextDrawSetPreviewModel( GetInfoServer_Logon[18], 8);
+    TextDrawSetPreviewRot( GetInfoServer_Logon[18], -16.000000, 0.000000, 0.000000, 1.000000);
+    TextDrawSetSelectable(GetInfoServer_Logon[18], 0);
+
+    GetInfoServer_Logon[19] = TextDrawCreate(461.000000, 353.000000, "Carregando"); // Nome dos personagens (Meio 1°)
+    TextDrawAlignment(GetInfoServer_Logon[19], 2);
+    TextDrawBackgroundColor(GetInfoServer_Logon[19], 255);
+    TextDrawFont(GetInfoServer_Logon[19], 2);
+    TextDrawLetterSize(GetInfoServer_Logon[19], 0.129997, 0.899998);
+    TextDrawColor(GetInfoServer_Logon[19], 811972095);
+    TextDrawSetOutline(GetInfoServer_Logon[19], 0);
+    TextDrawSetProportional(GetInfoServer_Logon[19], 1);
+    TextDrawSetShadow(GetInfoServer_Logon[19], 0);
+    TextDrawSetSelectable(GetInfoServer_Logon[19], 0);
+
+    GetInfoServer_Logon[20] = TextDrawCreate(449.000000, 349.000000, "Carregando"); // Nome dos personagens (Esquerda 2°)
+    TextDrawAlignment(GetInfoServer_Logon[20], 3);
+    TextDrawBackgroundColor(GetInfoServer_Logon[20], 255);
+    TextDrawFont(GetInfoServer_Logon[20], 2);
+    TextDrawLetterSize(GetInfoServer_Logon[20], 0.129997, 0.899998);
+    TextDrawColor(GetInfoServer_Logon[20], 811972095);
+    TextDrawSetOutline(GetInfoServer_Logon[20], 0);
+    TextDrawSetProportional(GetInfoServer_Logon[20], 1);
+    TextDrawSetShadow(GetInfoServer_Logon[20], 0);
+    TextDrawSetSelectable(GetInfoServer_Logon[20], 0);
+
+    GetInfoServer_Logon[21] = TextDrawCreate(471.000000, 348.000000, "Carregando"); // Nome dos personagens (Direita 3°)
+    TextDrawBackgroundColor(GetInfoServer_Logon[21], 255);
+    TextDrawFont(GetInfoServer_Logon[21], 2);
+    TextDrawLetterSize(GetInfoServer_Logon[21], 0.129997, 0.899998);
+    TextDrawColor(GetInfoServer_Logon[21], 811972095);
+    TextDrawSetOutline(GetInfoServer_Logon[21], 0);
+    TextDrawSetProportional(GetInfoServer_Logon[21], 1);
+    TextDrawSetShadow(GetInfoServer_Logon[21], 0);
+    TextDrawSetSelectable(GetInfoServer_Logon[21], 0);
+    return 1;
+}
+
+LoadInfoServer()
+{
+    new query[146];
+    mysql_format(mysqlConnect, query, sizeof(query), "SELECT accounts.`name`, accounts_data.`skin` FROM accounts, accounts_data WHERE accounts.id = accounts_data.id_player ORDER BY accounts.`id` DESC");
+    mysql_query(mysqlConnect, query);
+
+    GetInfoServerData[quant_Accounts] = cache_get_row_count(mysqlConnect); // Pega a quantidade de contas (normal)
+
+    new field[24];
+    cache_get_field_content(2, "name", field);
+    format(GetInfoLastRegister[2][name], 24, field);
+
+    cache_get_field_content(1, "name", field);
+    format(GetInfoLastRegister[1][name], 24, field);
+
+    cache_get_field_content(0, "name", field);
+    format(GetInfoLastRegister[0][name], 24, field);
+
+
+    GetInfoLastRegister[0][skin] = cache_get_field_content_int(0, "skin");
+    GetInfoLastRegister[1][skin] = cache_get_field_content_int(1, "skin");
+    GetInfoLastRegister[2][skin] = cache_get_field_content_int(2, "skin");
+
+    //
+    mysql_format(mysqlConnect, query, sizeof(query), "SELECT `id` FROM `houses`");
+    mysql_query(mysqlConnect, query);
+    GetInfoServerData[quant_Houses] = cache_get_row_count(mysqlConnect);
+
+    mysql_format(mysqlConnect, query, sizeof(query), "SELECT `id` FROM `business`");
+    mysql_query(mysqlConnect, query);
+    GetInfoServerData[quant_Business] = cache_get_row_count(mysqlConnect);
+    return 1;
+}
+
+ReloadInfoServer()
+{
+    GetInfoServerData[quant_Accounts] = 0;
+    GetInfoServerData[quant_Houses] = 0;
+    GetInfoServerData[quant_Business] = 0;
+
+    format(GetInfoLastRegister[0][name], 24, "");
+    format(GetInfoLastRegister[1][name], 24, "");
+    format(GetInfoLastRegister[2][name], 24, "");
+
+    GetInfoLastRegister[0][skin] = 0;
+    GetInfoLastRegister[1][skin] = 0;
+    GetInfoLastRegister[2][skin] = 0;
+
+
+    LoadInfoServer();
+    foreach(new i : Player)
+    {
+        HideTextdrawsInfoServer(i);
+        ShowTextdrawsInfoServer(i);
+    }
+    return 1;
+}
+
+ShowTextdrawsInfoServer(playerid)
+{
+    for(new i = 0; i < 22; i++) TextDrawShowForPlayer(playerid, GetInfoServer_Logon[i]);
+    
+    new field[24];
+    format(field, sizeof(field), "%d", GetInfoServerData[quant_Accounts]);
+    TextDrawSetString(GetInfoServer_Logon[6], field); // Seta a quantidade de players registrados no servidor.
+    format(field, sizeof(field), "%d", GetInfoServerData[quant_Houses]);
+    TextDrawSetString(GetInfoServer_Logon[11], field); // Seta a quantidade de casas criadas no servidor.
+    format(field, sizeof(field), "%d", GetInfoServerData[quant_Business]);
+    TextDrawSetString(GetInfoServer_Logon[14], field); // Seta a quantidade de empresas criadas no servidor.
+
+
+    format(field, sizeof(field), "%s", GetInfoLastRegister[2][name]);
+    TextDrawSetString(GetInfoServer_Logon[19], field); // Seta o nome do ultimo cadastrado.
+    TextDrawSetPreviewModel(GetInfoServer_Logon[18], GetInfoLastRegister[2][skin]);
+
+    format(field, sizeof(field), "%s", GetInfoLastRegister[1][name]);
+    TextDrawSetString(GetInfoServer_Logon[20], field); // Seta o nome do penultimo cadastrado.
+    TextDrawSetPreviewModel(GetInfoServer_Logon[16], GetInfoLastRegister[1][skin]);
+
+    format(field, sizeof(field), "%s", GetInfoLastRegister[0][name]);
+    TextDrawSetString(GetInfoServer_Logon[21], field); // Seta o nome do ante-penultimo cadastrado.
+    TextDrawSetPreviewModel(GetInfoServer_Logon[17], GetInfoLastRegister[0][skin]);
+    
+
+    //-----
+    TextDrawHideForPlayer(playerid, GetInfoServer_Logon[18]);
+    TextDrawHideForPlayer(playerid, GetInfoServer_Logon[16]);
+    TextDrawHideForPlayer(playerid, GetInfoServer_Logon[17]);
+    TextDrawShowForPlayer(playerid, GetInfoServer_Logon[18]);
+    TextDrawShowForPlayer(playerid, GetInfoServer_Logon[16]);
+    TextDrawShowForPlayer(playerid, GetInfoServer_Logon[17]);
+    return 1;
+}
+
+HideTextdrawsInfoServer(playerid)
+{
+    for(new i = 0; i < 22; i++) TextDrawHideForPlayer(playerid, GetInfoServer_Logon[i]);
+    return 1;
+}

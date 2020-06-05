@@ -1,0 +1,30 @@
+
+
+
+/*                                                            ____      _____  _____    ____
+                                                    |\    /| /      /\  |    \ |    \  /
+                                                    | \  / | |      \/  |      |       |
+                                                    |  \/  | |          |____/ |____/  |  ___
+                                                    |      | |      /\  |    | |       |     |
+                                                    |      | \____  \/  |    | |       \_____/
+                                                                        
+                -----------------------------------------------------------------------------------------------------------------
+                |                                                                                                               |
+                |                                                                                                               |
+                |               Nome: Configurações de conexão do MySQL                                                         |
+                |          Descrição: Configura a conexão do banco de dados MySQL                                               |
+                |   Última alteração: 11/05/2016 - 16:19                                                                        |
+                |               Type: footer                                                                                    |
+                |                                                                                                               |
+                |                                                                                                               |
+                ---------------------------------------------------------------------------------------------------------------*/
+
+
+//-----------------------------------------------------------------------------
+
+
+public OnQueryError(errorid, error[], callback[], query[], connectionHandle)
+{
+    printfc(CONSOLE_RED, "-------------------------\nerrorid: %d\nerror: %s\ncallback: %s\nquery: %s\nconnectionHandle: %d", errorid, error, callback, query, connectionHandle);
+    return 1;
+}

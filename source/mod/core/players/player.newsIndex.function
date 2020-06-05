@@ -1,0 +1,403 @@
+/*                                                            ____      _____  _____    ____
+                                                    |\    /| /      /\  |    \ |    \  /
+                                                    | \  / | |      \/  |      |       |
+                                                    |  \/  | |          |____/ |____/  |  ___
+                                                    |      | |      /\  |    | |       |     |
+                                                    |      | \____  \/  |    | |       \_____/
+                                                                        
+                -----------------------------------------------------------------------------------------------------------------
+                |                                                                                                               |
+                |                                                                                                               |
+                |               Nome: Login & Registro                                                                          |
+                |          Descrição: --                                                                                        |
+                |   Última alteração: 27/05/2016 - 13:22                                                                        |
+                |               Type: script                                                                                    |
+                |                                                                                                               |
+                |                                                                                                               |
+                ---------------------------------------------------------------------------------------------------------------*/
+
+// Livrarias necessarias para o funcionamento geral do script.
+#include "inc\YSI\y_hooks"
+
+//-----------------------------------------------------------------------------
+
+// define
+#define MAX_NEWS    (30)
+
+// enums
+enum news_data
+{
+    Id_News,
+    title[36],
+    description[121],
+    newstext[255],
+    image_type[40],
+    date,
+    author[24],
+    bool:active
+}
+
+// variaveis 
+new news_Data[MAX_NEWS][news_data];
+new quant_News;
+new news_Atual[MAX_PLAYERS];
+new timer_news_carroussel[MAX_PLAYERS];
+
+// textdraws 
+new PlayerText:newsText_index[MAX_PLAYERS][6]; // Textdraws das noticias.
+
+//-----------------------------------------------------------------------------
+
+hook OnGameModeInit()
+{
+    printc(CONSOLE_GREY, "-> Carregando as noticias.");
+    LoadNews();
+    return 1;
+}
+
+newsClickPlayerTextdraw(playerid, PlayerText:playertextid) 
+{
+    if(playertextid == newsText_index[playerid][4])
+    {
+        KillTimer(timer_news_carroussel[playerid]);
+        SliderNews(playerid, false); // Slider para tras.
+        return 1;
+    }
+
+
+    if(playertextid == newsText_index[playerid][5])
+    {
+        KillTimer(timer_news_carroussel[playerid]);
+        SliderNews(playerid, true); // Slider para frente.
+        return 1;
+    }
+
+
+    // imagem
+    if(playertextid == newsText_index[playerid][1])
+    {
+        // Quando clicar na imagem, vai aparecer a notícia
+        KillTimer(timer_news_carroussel[playerid]); // pausa o carroussel automatico
+
+        new news[550], data[64];
+
+        new tm <tmStamp>;
+        localtime(Time: news_Data[news_Atual[playerid]][date], tmStamp);
+        strftime(data, sizeof(data), "%d/%m/%Y às %X", tmStamp); 
+
+        format(news, sizeof(news), "{10A8DA}Titulo da notícia: {FFFFFF}%s\n{10A8DA}Descrição: {FFFFFF}%s\n{10A8DA}Autor: {FFFFFF}%s\n{10A8DA}Data: {FFFFFF}%s\n\n\n{FFFFFF}%s", 
+            news_Data[news_Atual[playerid]][title], news_Data[news_Atual[playerid]][description], news_Data[news_Atual[playerid]][author], data, news_Data[news_Atual[playerid]][newstext]);
+        
+        ShowPlayerDialog(playerid, 959, DIALOG_STYLE_MSGBOX, news_Data[news_Atual[playerid]][title], news, "Fechar", "");
+        return 1;
+    }
+    return 1;
+}
+
+forward CarrousselSliderNews(playerid);
+public CarrousselSliderNews(playerid)
+{
+    if(quant_News == 1) return KillTimer(timer_news_carroussel[playerid]);
+    if(news_Atual[playerid] == ((quant_News) - 1))
+    {
+        news_Atual[playerid] = 0;
+        SetInfosNews(playerid, news_Atual[playerid]); 
+        PlayerTextDrawHide(playerid, newsText_index[playerid][4]); 
+        return 1;
+    } // maximo.
+
+    SliderNews(playerid, true);
+    return 1;
+}
+
+//-----------------------------------------------------------------------------
+
+CreatePlayerTextdrawsNewsIndex(playerid)
+{
+    /*                  -----------   Player Textdraws - Tela de login/index/noticias    -----------                */
+    newsText_index[playerid][0] = CreatePlayerTextDraw(playerid,360.000000, 109.000000, "_");
+    PlayerTextDrawBackgroundColor(playerid,newsText_index[playerid][0], 255);
+    PlayerTextDrawFont(playerid,newsText_index[playerid][0], 1);
+    PlayerTextDrawLetterSize(playerid,newsText_index[playerid][0], 0.500000, 22.000000);
+    PlayerTextDrawColor(playerid,newsText_index[playerid][0], -1);
+    PlayerTextDrawSetOutline(playerid,newsText_index[playerid][0], 0);
+    PlayerTextDrawSetProportional(playerid,newsText_index[playerid][0], 1);
+    PlayerTextDrawSetShadow(playerid,newsText_index[playerid][0], 1);
+    PlayerTextDrawUseBox(playerid,newsText_index[playerid][0], 1);
+    PlayerTextDrawBoxColor(playerid,newsText_index[playerid][0], -370546177);
+    PlayerTextDrawTextSize(playerid,newsText_index[playerid][0], 60.000000, 0.000000);
+    PlayerTextDrawSetSelectable(playerid,newsText_index[playerid][0], 0);
+
+    newsText_index[playerid][1] = CreatePlayerTextDraw(playerid,62.000000, 106.000000, "loadsc7:loadsc7");
+    PlayerTextDrawBackgroundColor(playerid,newsText_index[playerid][1], 255);
+    PlayerTextDrawFont(playerid,newsText_index[playerid][1], 4);
+    PlayerTextDrawLetterSize(playerid,newsText_index[playerid][1], 0.500000, 1.000000);
+    PlayerTextDrawColor(playerid,newsText_index[playerid][1], -1);
+    PlayerTextDrawSetOutline(playerid,newsText_index[playerid][1], 0);
+    PlayerTextDrawSetProportional(playerid,newsText_index[playerid][1], 1);
+    PlayerTextDrawSetShadow(playerid,newsText_index[playerid][1], 1);
+    PlayerTextDrawUseBox(playerid,newsText_index[playerid][1], 1);
+    PlayerTextDrawBoxColor(playerid,newsText_index[playerid][1], 255);
+    PlayerTextDrawTextSize(playerid,newsText_index[playerid][1], 296.000000, 164.000000);
+    PlayerTextDrawSetSelectable(playerid,newsText_index[playerid][1], 1);
+
+    newsText_index[playerid][2] = CreatePlayerTextDraw(playerid,68.000000, 273.000000, "Titulo da noticia");
+    PlayerTextDrawBackgroundColor(playerid,newsText_index[playerid][2], 255);
+    PlayerTextDrawFont(playerid,newsText_index[playerid][2], 2);
+    PlayerTextDrawLetterSize(playerid,newsText_index[playerid][2], 0.219999, 1.699998);
+    PlayerTextDrawColor(playerid,newsText_index[playerid][2], 239971839);
+    PlayerTextDrawSetOutline(playerid,newsText_index[playerid][2], 0);
+    PlayerTextDrawSetProportional(playerid,newsText_index[playerid][2], 1);
+    PlayerTextDrawSetShadow(playerid,newsText_index[playerid][2], 0);
+    PlayerTextDrawSetSelectable(playerid,newsText_index[playerid][2], 0);
+
+    newsText_index[playerid][3] = CreatePlayerTextDraw(playerid,69.000000, 288.000000, "Uma pequena descricao dos bagulho que sao loucos e sao noiados~n~fumando pedrinha de coisas noiadas e legais mundo fodas.");
+    PlayerTextDrawBackgroundColor(playerid,newsText_index[playerid][3], 255);
+    PlayerTextDrawFont(playerid,newsText_index[playerid][3], 2);
+    PlayerTextDrawLetterSize(playerid,newsText_index[playerid][3], 0.159999, 0.799998);
+    PlayerTextDrawColor(playerid,newsText_index[playerid][3], 2008281343);
+    PlayerTextDrawSetOutline(playerid,newsText_index[playerid][3], 0);
+    PlayerTextDrawSetProportional(playerid,newsText_index[playerid][3], 1);
+    PlayerTextDrawSetShadow(playerid,newsText_index[playerid][3], 0);
+    PlayerTextDrawSetSelectable(playerid,newsText_index[playerid][3], 0);
+
+    newsText_index[playerid][4] = CreatePlayerTextDraw(playerid,72.000000, 177.000000, "LD_BEAT:left");
+    PlayerTextDrawBackgroundColor(playerid,newsText_index[playerid][4], 255);
+    PlayerTextDrawFont(playerid,newsText_index[playerid][4], 4);
+    PlayerTextDrawLetterSize(playerid,newsText_index[playerid][4], 0.500000, 1.000000);
+    PlayerTextDrawColor(playerid,newsText_index[playerid][4], -1);
+    PlayerTextDrawSetOutline(playerid,newsText_index[playerid][4], 0);
+    PlayerTextDrawSetProportional(playerid,newsText_index[playerid][4], 1);
+    PlayerTextDrawSetShadow(playerid,newsText_index[playerid][4], 1);
+    PlayerTextDrawUseBox(playerid,newsText_index[playerid][4], 1);
+    PlayerTextDrawBoxColor(playerid,newsText_index[playerid][4], 255);
+    PlayerTextDrawTextSize(playerid,newsText_index[playerid][4], 14.000000, 15.000000);
+    PlayerTextDrawSetSelectable(playerid,newsText_index[playerid][4], 1);
+
+    newsText_index[playerid][5] = CreatePlayerTextDraw(playerid,334.000000, 177.000000, "LD_BEAT:right");
+    PlayerTextDrawBackgroundColor(playerid,newsText_index[playerid][5], 255);
+    PlayerTextDrawFont(playerid,newsText_index[playerid][5], 4);
+    PlayerTextDrawLetterSize(playerid,newsText_index[playerid][5], 0.500000, 1.000000);
+    PlayerTextDrawColor(playerid,newsText_index[playerid][5], -1);
+    PlayerTextDrawSetOutline(playerid,newsText_index[playerid][5], 0);
+    PlayerTextDrawSetProportional(playerid,newsText_index[playerid][5], 1);
+    PlayerTextDrawSetShadow(playerid,newsText_index[playerid][5], 1);
+    PlayerTextDrawUseBox(playerid,newsText_index[playerid][5], 1);
+    PlayerTextDrawBoxColor(playerid,newsText_index[playerid][5], 255);
+    PlayerTextDrawTextSize(playerid,newsText_index[playerid][5], 14.000000, 15.000000);
+    PlayerTextDrawSetSelectable(playerid,newsText_index[playerid][5], 1);
+    return 1;
+}
+
+DestroyPlayerTextdrawsNewsIndex(playerid)
+{
+    for(new i = 0; i < 6; ++i) PlayerTextDrawDestroy(playerid, newsText_index[playerid][i]);
+    return 1;
+}
+
+LoadNews()
+{
+    new query[55];
+    mysql_format(mysqlConnect, query, sizeof(query), "SELECT * FROM `server_news` ORDER BY `id` DESC");
+    mysql_query(mysqlConnect, query);
+
+    new num_rows, num_fields;
+    cache_get_data(num_rows, num_fields, mysqlConnect);
+
+    for(new news_id = 0; news_id < num_rows; news_id++)
+    {
+        if(quant_News == MAX_NEWS)
+        {
+            printfc(CONSOLE_RED, "-> ERRO: Noticia id(for): %d nao foi carregada por passar do limite maximo de: %d noticias!", news_id, MAX_NEWS);
+            break;
+        }
+
+        new field[260];
+        news_Data[news_id][Id_News] = cache_get_field_content_int(news_id, "id", mysqlConnect);
+
+        cache_get_field_content(news_id, "title", field);
+        format(news_Data[news_id][title], 36, field);
+
+        cache_get_field_content(news_id, "description", field);
+        format(news_Data[news_id][description], 121, field);
+
+        cache_get_field_content(news_id, "text", field);
+        format(news_Data[news_id][newstext], 255, field);
+
+        cache_get_field_content(news_id, "image_type", field);
+        format(news_Data[news_id][image_type], 40, field);
+
+        news_Data[news_id][date] = cache_get_field_content_int(news_id, "date", mysqlConnect);    
+
+        cache_get_field_content(news_id, "author", field);
+        format(news_Data[news_id][author], 24, field);
+
+        news_Data[news_id][active] = true;
+        quant_News ++;
+    }
+
+    if(quant_News > 0) printfc(CONSOLE_GREEN, "-> Noticias carregadas com sucesso, total de: %d noticias", quant_News);
+        else printfc(CONSOLE_RED, "-> Nao ha nenhuma noticia para ser carregada!");
+    return 1;
+}
+
+SetInfosNews(playerid, telaid)
+{
+    PlayerTextDrawSetString(playerid, newsText_index[playerid][2], news_Data[telaid][title]);
+    PlayerTextDrawSetString(playerid, newsText_index[playerid][3], news_Data[telaid][description]);
+    PlayerTextDrawSetString(playerid, newsText_index[playerid][1], news_Data[telaid][image_type]);
+
+    for(new i = 0; i < 6; i++) PlayerTextDrawHide(playerid, newsText_index[playerid][i]);
+    for(new i = 0; i < 6; i++) PlayerTextDrawShow(playerid, newsText_index[playerid][i]);
+    return 1;
+}
+
+ShowNewsInIndex(playerid)
+{
+    if(quant_News > 0)
+    {
+        // Carrega as informações somente da primeira noticia.
+        news_Atual[playerid] = 0; // Coloca que o player está atualmente vendo a noticia de id 0 (que é a primeira noticia que foi carregada).
+
+        PlayerTextDrawSetString(playerid, newsText_index[playerid][2], news_Data[0][title]);
+        PlayerTextDrawSetString(playerid, newsText_index[playerid][3], news_Data[0][description]);
+        PlayerTextDrawSetString(playerid, newsText_index[playerid][1], news_Data[0][image_type]);
+
+        for(new i = 0; i < 6; i++) PlayerTextDrawShow(playerid, newsText_index[playerid][i]);
+
+        if(quant_News == 1) 
+        {
+            PlayerTextDrawHide(playerid, newsText_index[playerid][4]); // Não mais mostrar a opção de ir pros lados, para evitar bugs.
+            PlayerTextDrawHide(playerid, newsText_index[playerid][5]);
+            return 1;
+        }
+        else PlayerTextDrawHide(playerid, newsText_index[playerid][4]);
+
+        timer_news_carroussel[playerid] = SetTimerEx("CarrousselSliderNews", 5000, true, "i", playerid); // carroussel
+        return 1;
+    }
+    else 
+    {
+        news_Atual[playerid] = 0;
+
+        // Se não houver noticias.
+        news_Data[0][Id_News] = 1;
+        format(news_Data[0][title], 36, "Nao ha nada de novo aqui");
+        format(news_Data[0][description], 121, "E, parece que nao ha nada para se ver aqui ...");
+        format(news_Data[0][newstext], 255, "Infelizmente, nossos administradores ainda nao atualizaram as noticias :/");
+        format(news_Data[0][image_type], 40, "loadsc7:loadsc7");
+        news_Data[0][date] = gettime();
+        format(news_Data[0][author], 24, "guardiao");
+
+        PlayerTextDrawSetString(playerid, newsText_index[playerid][2], news_Data[0][title]);
+        PlayerTextDrawSetString(playerid, newsText_index[playerid][3], news_Data[0][description]);
+
+        for(new i = 0; i < 6; i++) PlayerTextDrawShow(playerid, newsText_index[playerid][i]);
+        PlayerTextDrawHide(playerid, newsText_index[playerid][4]); // Não mais mostrar a opção de ir pros lados, para evitar bugs.
+        PlayerTextDrawHide(playerid, newsText_index[playerid][5]);
+    }
+    return 1;
+}
+
+HideNewsInIndex(playerid)
+{
+    for(new i = 0; i < 6; i++) PlayerTextDrawHide(playerid, newsText_index[playerid][i]); 
+    KillTimer(timer_news_carroussel[playerid]);
+    return 1;
+}
+
+//-----------------------------------------------------------------------------
+
+SliderNews(playerid, bool:pos = true)
+{
+    switch(pos)
+    {
+        case false: // Slider para tras
+        {
+            if(news_Atual[playerid] == ((quant_News) -1))
+            {
+                news_Atual[playerid] --;
+                SetInfosNews(playerid, news_Atual[playerid]);
+
+                if(news_Atual[playerid] == 0) PlayerTextDrawHide(playerid, newsText_index[playerid][4]);
+                    else if(news_Atual[playerid] > 0) PlayerTextDrawShow(playerid, newsText_index[playerid][4]);
+                return 1;
+            }
+
+            for(new i = 0; i < MAX_NEWS; i++)
+            {
+                if(news_Data[i][Id_News] < news_Data[news_Atual[playerid]][Id_News] && news_Data[news_Atual[playerid]][Id_News] != news_Data[i][Id_News] && news_Data[i][active] == true)
+                {
+                    news_Atual[playerid] --;
+                    SetInfosNews(playerid, news_Atual[playerid]);
+                    break;
+                }
+            }
+
+            if(news_Atual[playerid] == 0) PlayerTextDrawHide(playerid, newsText_index[playerid][4]);
+                else if(news_Atual[playerid] > 0) PlayerTextDrawShow(playerid, newsText_index[playerid][4]);
+            return 1;
+        }
+        case true: // Slider para frente
+        {
+            for(new i = 0; i < MAX_NEWS; i++)
+            {
+                if(news_Data[i][Id_News] < news_Data[news_Atual[playerid]][Id_News] && news_Data[news_Atual[playerid]][Id_News] != news_Data[i][Id_News] && news_Data[i][active] == true)
+                {
+                    news_Atual[playerid] ++;
+                    SetInfosNews(playerid, news_Atual[playerid]);
+                    break;
+                }
+            }
+
+            if(news_Atual[playerid] == ((quant_News) - 1)) PlayerTextDrawHide(playerid, newsText_index[playerid][5]);
+                else if(news_Atual[playerid] < ((quant_News) - 1)) return PlayerTextDrawShow(playerid, newsText_index[playerid][5]);
+            return 1;
+        }
+    }
+    return 1;
+}
+
+RefreshAllInfosNews()
+{
+    if(quant_News == 0) return 0;
+    for(new id_news = 0; id_news < quant_News; id_news++)
+    {
+        news_Data[id_news][Id_News] = 0;
+        format(news_Data[0][title], 36, "");
+        format(news_Data[0][description], 121, "");
+        format(news_Data[0][newstext], 255, "");
+        format(news_Data[0][image_type], 40, "");
+        news_Data[id_news][date] = 0;
+        format(news_Data[0][author], 24, "");
+        news_Data[id_news][active] = false;
+    }
+
+    quant_News = 0;
+    LoadNews();
+
+    foreach(new i : Player)
+    {
+        news_Atual[i] = 0;
+        HideNewsInIndex(i);
+        ShowNewsInIndex(i);
+    }
+    return 1;
+}
+
+/*
+InsertNews(playerid, title[], description[], newstext[], image_type[], date = gettime())
+{
+    new query[128];
+    mysql_format(mysqlConnect, query, sizeof(query), "INSERT INTO `server_news` (`title`, `description`, `text`, `image_type`, `date`, `author`) \
+        VALUES ('%e','%e','%e','%e','%d','%e');",
+
+        title,
+        description,
+        newstext,
+        image_type,
+        gettime(),
+        GetPlayerName(playerid));
+    mysql_pquery(mysqlConnect, query);
+    return 1;
+}*/

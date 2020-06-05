@@ -1,0 +1,83 @@
+
+
+
+/*                                                            ____      _____  _____    ____
+                                                    |\    /| /      /\  |    \ |    \  /
+                                                    | \  / | |      \/  |      |       |
+                                                    |  \/  | |          |____/ |____/  |  ___
+                                                    |      | |      /\  |    | |       |     |
+                                                    |      | \____  \/  |    | |       \_____/
+                                                                        
+                -----------------------------------------------------------------------------------------------------------------
+                |                                                                                                               |
+                |                                                                                                               |
+                |               Nome: Main Header                                                                               |
+                |          Descrição: --                                                                                        |
+                |   Última alteração: 11/05/2016 - 20:16                                                                        |
+                |               Type: none                                                                                      |
+                |                                                                                                               |
+                |                                                                                                               |
+                ---------------------------------------------------------------------------------------------------------------*/
+
+/* Include necessária para o funcionamento do script. */
+#include "inc\YSI\y_hooks"
+
+//------------------------------------------
+
+#define INVALID_DIALOG (32765)
+
+//------------------------------------------
+
+
+main()
+{
+    printc(CONSOLE_GREY, "* INFO: O Majestic foi iniciado com sucesso.");
+}
+
+hook OnGameModeInit()
+{
+    mysql(connect);
+    return 1;
+}
+
+hook OnGameModeExit()
+{
+    mysql(close);
+    return 1;
+}
+
+// Nativas
+
+native gpci(playerid, const serial[ ], maxlen);
+stock GetPlayerSerial(playerid)
+{
+    new _serial[512];
+    gpci(playerid,_serial,sizeof(_serial));
+    return _serial;
+}
+
+// Funções
+PasswordEncode(string[], size)
+{   
+    for(new s; s <= size; s++)
+    {       
+        if(s ^ size) string[s] = ']';
+        else string[s] = EOS;
+    }
+    return 1;
+}
+
+stock alfabeto [ 1 + ('z' - 'a') ] = { 'a', 'b', ...} ;
+stock numeros [ 1 + ('9' - '0') ] = { '0', '1', ...} ;
+
+stock GetRandomString(size = 0xff)
+{
+    static stringBuff[0xff];
+
+    if(size < 0xff && size) 
+    {
+        for(new i; i != size; i++) stringBuff[i] = bool: random(2) ? numeros [random(sizeof numeros )] : alfabeto [random(sizeof alfabeto )];
+        stringBuff[size] = EOS;
+    }
+    return stringBuff;
+}

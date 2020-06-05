@@ -1,0 +1,510 @@
+/*                                                            ____      _____  _____    ____
+                                                    |\    /| /      /\  |    \ |    \  /
+                                                    | \  / | |      \/  |      |       |
+                                                    |  \/  | |          |____/ |____/  |  ___
+                                                    |      | |      /\  |    | |       |     |
+                                                    |      | \____  \/  |    | |       \_____/
+                                                                        
+                -----------------------------------------------------------------------------------------------------------------
+                |                                                                                                               |
+                |                                                                                                               |
+                |               Nome: Registro                                                                                  |
+                |          Descrição: --                                                                                        |
+                |   Última alteração: 27/05/2016 - 13:22                                                                        |
+                |               Type: script                                                                                    |
+                |                                                                                                               |
+                |                                                                                                               |
+                ---------------------------------------------------------------------------------------------------------------*/
+
+// Livrarias necessarias para o funcionamento geral do script.
+#include "inc\YSI\y_hooks"
+
+//-----------------------------------------------------------------------------
+
+// textdraws do Registro
+new Text:logonRegister[35];
+new PlayerText:logonRegister_Player[MAX_PLAYERS][3]; // Textdraws de registro.
+
+//-----------------------------------------------------------------------------
+
+CreateTextDrawsRegister()
+{
+       /*                      -----------   Textdraws - Local registro      -----------                */
+    logonRegister[0] = TextDrawCreate(670.000000, -10.000000, "_");
+    TextDrawBackgroundColor(logonRegister[0], 255);
+    TextDrawFont(logonRegister[0], 1);
+    TextDrawLetterSize(logonRegister[0], 0.500000, 54.000000);
+    TextDrawColor(logonRegister[0], -1);
+    TextDrawSetOutline(logonRegister[0], 0);
+    TextDrawSetProportional(logonRegister[0], 1);
+    TextDrawSetShadow(logonRegister[0], 1);
+    TextDrawUseBox(logonRegister[0], 1);
+    TextDrawBoxColor(logonRegister[0], 90);
+    TextDrawTextSize(logonRegister[0], -100.000000, 0.000000);
+    TextDrawSetSelectable(logonRegister[0], 0);
+
+    logonRegister[1] = TextDrawCreate(500.000000, 80.000000, "_");
+    TextDrawBackgroundColor(logonRegister[1], 255);
+    TextDrawFont(logonRegister[1], 1);
+    TextDrawLetterSize(logonRegister[1], 0.500000, 26.500001);
+    TextDrawColor(logonRegister[1], 962706943);
+    TextDrawSetOutline(logonRegister[1], 0);
+    TextDrawSetProportional(logonRegister[1], 1);
+    TextDrawSetShadow(logonRegister[1], 1);
+    TextDrawUseBox(logonRegister[1], 1);
+    TextDrawBoxColor(logonRegister[1], 239905023);
+    TextDrawTextSize(logonRegister[1], 319.000000, 0.000000);
+    TextDrawSetSelectable(logonRegister[1], 0);
+
+    logonRegister[2] = TextDrawCreate(498.000000, 78.000000, "_");
+    TextDrawBackgroundColor(logonRegister[2], 255);
+    TextDrawFont(logonRegister[2], 1);
+    TextDrawLetterSize(logonRegister[2], 0.500000, 27.000003);
+    TextDrawColor(logonRegister[2], -1);
+    TextDrawSetOutline(logonRegister[2], 0);
+    TextDrawSetProportional(logonRegister[2], 1);
+    TextDrawSetShadow(logonRegister[2], 1);
+    TextDrawUseBox(logonRegister[2], 1);
+    TextDrawBoxColor(logonRegister[2], 239905023);
+    TextDrawTextSize(logonRegister[2], 321.000000, 0.000000);
+    TextDrawSetSelectable(logonRegister[2], 0);
+
+    logonRegister[3] = TextDrawCreate(320.000000, 75.000000, "LD_BEAT:chit");
+    TextDrawBackgroundColor(logonRegister[3], 255);
+    TextDrawFont(logonRegister[3], 4);
+    TextDrawLetterSize(logonRegister[3], 0.500000, 1.000000);
+    TextDrawColor(logonRegister[3], 239905023);
+    TextDrawSetOutline(logonRegister[3], 0);
+    TextDrawSetProportional(logonRegister[3], 1);
+    TextDrawSetShadow(logonRegister[3], 1);
+    TextDrawUseBox(logonRegister[3], 1);
+    TextDrawBoxColor(logonRegister[3], 255);
+    TextDrawTextSize(logonRegister[3], 8.000000, 7.000000);
+    TextDrawSetSelectable(logonRegister[3], 0);
+
+    logonRegister[4] = TextDrawCreate(491.000000, 75.000000, "LD_BEAT:chit");
+    TextDrawBackgroundColor(logonRegister[4], 255);
+    TextDrawFont(logonRegister[4], 4);
+    TextDrawLetterSize(logonRegister[4], 0.500000, 1.000000);
+    TextDrawColor(logonRegister[4], 239905023);
+    TextDrawSetOutline(logonRegister[4], 0);
+    TextDrawSetProportional(logonRegister[4], 1);
+    TextDrawSetShadow(logonRegister[4], 1);
+    TextDrawUseBox(logonRegister[4], 1);
+    TextDrawBoxColor(logonRegister[4], 255);
+    TextDrawTextSize(logonRegister[4], 8.000000, 7.000000);
+    TextDrawSetSelectable(logonRegister[4], 0);
+
+    logonRegister[5] = TextDrawCreate(320.000000, 332.000000, "LD_BEAT:chit");
+    TextDrawBackgroundColor(logonRegister[5], 255);
+    TextDrawFont(logonRegister[5], 4);
+    TextDrawLetterSize(logonRegister[5], 0.500000, 1.000000);
+    TextDrawColor(logonRegister[5], -1077357825);
+    TextDrawSetOutline(logonRegister[5], 0);
+    TextDrawSetProportional(logonRegister[5], 1);
+    TextDrawSetShadow(logonRegister[5], 1);
+    TextDrawUseBox(logonRegister[5], 1);
+    TextDrawBoxColor(logonRegister[5], 255);
+    TextDrawTextSize(logonRegister[5], 8.000000, 7.000000);
+    TextDrawSetSelectable(logonRegister[5], 0);
+
+    logonRegister[6] = TextDrawCreate(491.000000, 332.000000, "LD_BEAT:chit");
+    TextDrawBackgroundColor(logonRegister[6], 255);
+    TextDrawFont(logonRegister[6], 4);
+    TextDrawLetterSize(logonRegister[6], 0.500000, 1.000000);
+    TextDrawColor(logonRegister[6], -1077357825);
+    TextDrawSetOutline(logonRegister[6], 0);
+    TextDrawSetProportional(logonRegister[6], 1);
+    TextDrawSetShadow(logonRegister[6], 1);
+    TextDrawUseBox(logonRegister[6], 1);
+    TextDrawBoxColor(logonRegister[6], 255);
+    TextDrawTextSize(logonRegister[6], 8.000000, 7.000000);
+    TextDrawSetSelectable(logonRegister[6], 0);
+
+    logonRegister[7] = TextDrawCreate(479.000000, 79.000000, "LD_BEAT:chit");
+    TextDrawBackgroundColor(logonRegister[7], 255);
+    TextDrawFont(logonRegister[7], 4);
+    TextDrawLetterSize(logonRegister[7], 0.500000, 1.000000);
+    TextDrawColor(logonRegister[7], 120);
+    TextDrawSetOutline(logonRegister[7], 0);
+    TextDrawSetProportional(logonRegister[7], 1);
+    TextDrawSetShadow(logonRegister[7], 1);
+    TextDrawUseBox(logonRegister[7], 1);
+    TextDrawBoxColor(logonRegister[7], 255);
+    TextDrawTextSize(logonRegister[7], 16.000000, 20.000000);
+    TextDrawSetSelectable(logonRegister[7], 0);
+
+    logonRegister[8] = TextDrawCreate(480.000000, 80.000000, "LD_BEAT:chit");
+    TextDrawBackgroundColor(logonRegister[8], 255);
+    TextDrawFont(logonRegister[8], 4);
+    TextDrawLetterSize(logonRegister[8], 0.500000, 1.000000);
+    TextDrawColor(logonRegister[8], -1);
+    TextDrawSetOutline(logonRegister[8], 0);
+    TextDrawSetProportional(logonRegister[8], 1);
+    TextDrawSetShadow(logonRegister[8], 1);
+    TextDrawUseBox(logonRegister[8], 1);
+    TextDrawBoxColor(logonRegister[8], 255);
+    TextDrawTextSize(logonRegister[8], 14.000000, 17.000000);
+    TextDrawSetSelectable(logonRegister[8], 0);
+
+    logonRegister[9] = TextDrawCreate(484.299987, 83.500000, "x");
+    TextDrawBackgroundColor(logonRegister[9], 255);
+    TextDrawFont(logonRegister[9], 2);
+    TextDrawLetterSize(logonRegister[9], 0.209999, 1.000000);
+    TextDrawColor(logonRegister[9], 357276927);
+    TextDrawSetOutline(logonRegister[9], 0);
+    TextDrawSetProportional(logonRegister[9], 1);
+    TextDrawSetShadow(logonRegister[9], 0);
+    TextDrawSetSelectable(logonRegister[9], 0);
+
+    logonRegister[10] = TextDrawCreate(356.000000, 100.000000, "REGISTRE-SE!");
+    TextDrawBackgroundColor(logonRegister[10], 255);
+    TextDrawFont(logonRegister[10], 2);
+    TextDrawLetterSize(logonRegister[10], 0.409999, 2.799999);
+    TextDrawColor(logonRegister[10], -1);
+    TextDrawSetOutline(logonRegister[10], 0);
+    TextDrawSetProportional(logonRegister[10], 1);
+    TextDrawSetShadow(logonRegister[10], 0);
+    TextDrawSetSelectable(logonRegister[10], 0);
+
+    logonRegister[11] = TextDrawCreate(388.000000, 121.000000, "E gratuito e sempre sera...");
+    TextDrawBackgroundColor(logonRegister[11], 255);
+    TextDrawFont(logonRegister[11], 2);
+    TextDrawLetterSize(logonRegister[11], 0.129999, 0.899999);
+    TextDrawColor(logonRegister[11], -1);
+    TextDrawSetOutline(logonRegister[11], 0);
+    TextDrawSetProportional(logonRegister[11], 1);
+    TextDrawSetShadow(logonRegister[11], 0);
+    TextDrawSetSelectable(logonRegister[11], 0);
+
+    logonRegister[12] = TextDrawCreate(500.000000, 158.000000, "_");
+    TextDrawBackgroundColor(logonRegister[12], 255);
+    TextDrawFont(logonRegister[12], 1);
+    TextDrawLetterSize(logonRegister[12], 0.500000, 19.400001);
+    TextDrawColor(logonRegister[12], -1);
+    TextDrawSetOutline(logonRegister[12], 0);
+    TextDrawSetProportional(logonRegister[12], 1);
+    TextDrawSetShadow(logonRegister[12], 1);
+    TextDrawUseBox(logonRegister[12], 1);
+    TextDrawBoxColor(logonRegister[12], -1077357825);
+    TextDrawTextSize(logonRegister[12], 319.000000, 0.000000);
+    TextDrawSetSelectable(logonRegister[12], 0);
+
+    logonRegister[13] = TextDrawCreate(498.000000, 329.000000, "_");
+    TextDrawBackgroundColor(logonRegister[13], 255);
+    TextDrawFont(logonRegister[13], 1);
+    TextDrawLetterSize(logonRegister[13], 0.500000, 0.750000);
+    TextDrawColor(logonRegister[13], -1);
+    TextDrawSetOutline(logonRegister[13], 0);
+    TextDrawSetProportional(logonRegister[13], 1);
+    TextDrawSetShadow(logonRegister[13], 1);
+    TextDrawUseBox(logonRegister[13], 1);
+    TextDrawBoxColor(logonRegister[13], -1077357825);
+    TextDrawTextSize(logonRegister[13], 321.000000, 0.000000);
+    TextDrawSetSelectable(logonRegister[13], 0);
+
+    logonRegister[14] = TextDrawCreate(480.000000, 189.000000, "_");
+    TextDrawBackgroundColor(logonRegister[14], 255);
+    TextDrawFont(logonRegister[14], 1);
+    TextDrawLetterSize(logonRegister[14], 0.500000, 1.400002);
+    TextDrawColor(logonRegister[14], -1);
+    TextDrawSetOutline(logonRegister[14], 0);
+    TextDrawSetProportional(logonRegister[14], 1);
+    TextDrawSetShadow(logonRegister[14], 1);
+    TextDrawUseBox(logonRegister[14], 1);
+    TextDrawBoxColor(logonRegister[14], -303174145);
+    TextDrawTextSize(logonRegister[14], 339.000000, 0.000000);
+    TextDrawSetSelectable(logonRegister[14], 0);
+
+    logonRegister[15] = TextDrawCreate(479.000000, 188.000000, "_");
+    TextDrawBackgroundColor(logonRegister[15], 255);
+    TextDrawFont(logonRegister[15], 1);
+    TextDrawLetterSize(logonRegister[15], 0.500000, 1.600002);
+    TextDrawColor(logonRegister[15], -1);
+    TextDrawSetOutline(logonRegister[15], 0);
+    TextDrawSetProportional(logonRegister[15], 1);
+    TextDrawSetShadow(logonRegister[15], 1);
+    TextDrawUseBox(logonRegister[15], 1);
+    TextDrawBoxColor(logonRegister[15], -303174145);
+    TextDrawTextSize(logonRegister[15], 340.000000, 0.000000);
+    TextDrawSetSelectable(logonRegister[15], 0);
+
+    logonRegister[16] = TextDrawCreate(479.000000, 207.000000, "_");
+    TextDrawBackgroundColor(logonRegister[16], 255);
+    TextDrawFont(logonRegister[16], 1);
+    TextDrawLetterSize(logonRegister[16], 0.500000, -0.399996);
+    TextDrawColor(logonRegister[16], -1);
+    TextDrawSetOutline(logonRegister[16], 0);
+    TextDrawSetProportional(logonRegister[16], 1);
+    TextDrawSetShadow(logonRegister[16], 1);
+    TextDrawUseBox(logonRegister[16], 1);
+    TextDrawBoxColor(logonRegister[16], 50);
+    TextDrawTextSize(logonRegister[16], 340.000000, 0.000000);
+    TextDrawSetSelectable(logonRegister[16], 0);
+
+    logonRegister[17] = TextDrawCreate(341.000000, 174.000000, "INSIRA UM NICK VALIDO");
+    TextDrawBackgroundColor(logonRegister[17], 255);
+    TextDrawFont(logonRegister[17], 2);
+    TextDrawLetterSize(logonRegister[17], 0.170000, 1.000000);
+    TextDrawColor(logonRegister[17], 1299888127);
+    TextDrawSetOutline(logonRegister[17], 0);
+    TextDrawSetProportional(logonRegister[17], 1);
+    TextDrawSetShadow(logonRegister[17], 0);
+    TextDrawSetSelectable(logonRegister[17], 0);
+
+    logonRegister[18] = TextDrawCreate(453.000000, 186.000000, "icone_ajudaUSUARIO");
+    TextDrawBackgroundColor(logonRegister[18], 0);
+    TextDrawFont(logonRegister[18], 5);
+    TextDrawLetterSize(logonRegister[18], 0.500000, 1.000000);
+    TextDrawColor(logonRegister[18], -1);
+    TextDrawSetOutline(logonRegister[18], 0);
+    TextDrawSetProportional(logonRegister[18], 1);
+    TextDrawSetShadow(logonRegister[18], 1);
+    TextDrawUseBox(logonRegister[18], 1);
+    TextDrawBoxColor(logonRegister[18], 255);
+    TextDrawTextSize(logonRegister[18], 28.000000, 18.000000);
+    TextDrawSetPreviewModel(logonRegister[18], 1239);
+    TextDrawSetPreviewRot(logonRegister[18], -2.000000, 0.000000, -180.000000, 1.000000);
+    TextDrawSetSelectable(logonRegister[18], 0);
+
+    logonRegister[19] = TextDrawCreate(480.000000, 229.000000, "_");
+    TextDrawBackgroundColor(logonRegister[19], 255);
+    TextDrawFont(logonRegister[19], 1);
+    TextDrawLetterSize(logonRegister[19], 0.500000, 1.400002);
+    TextDrawColor(logonRegister[19], -1);
+    TextDrawSetOutline(logonRegister[19], 0);
+    TextDrawSetProportional(logonRegister[19], 1);
+    TextDrawSetShadow(logonRegister[19], 1);
+    TextDrawUseBox(logonRegister[19], 1);
+    TextDrawBoxColor(logonRegister[19], -303174145);
+    TextDrawTextSize(logonRegister[19], 339.000000, 0.000000);
+    TextDrawSetSelectable(logonRegister[19], 0);
+
+    logonRegister[20] = TextDrawCreate(479.000000, 228.000000, "_");
+    TextDrawBackgroundColor(logonRegister[20], 255);
+    TextDrawFont(logonRegister[20], 1);
+    TextDrawLetterSize(logonRegister[20], 0.500000, 1.600002);
+    TextDrawColor(logonRegister[20], -1);
+    TextDrawSetOutline(logonRegister[20], 0);
+    TextDrawSetProportional(logonRegister[20], 1);
+    TextDrawSetShadow(logonRegister[20], 1);
+    TextDrawUseBox(logonRegister[20], 1);
+    TextDrawBoxColor(logonRegister[20], -303174145);
+    TextDrawTextSize(logonRegister[20], 340.000000, 0.000000);
+    TextDrawSetSelectable(logonRegister[20], 0);
+
+    logonRegister[21] = TextDrawCreate(479.000000, 247.000000, "_");
+    TextDrawBackgroundColor(logonRegister[21], 255);
+    TextDrawFont(logonRegister[21], 1);
+    TextDrawLetterSize(logonRegister[21], 0.500000, -0.399996);
+    TextDrawColor(logonRegister[21], -1);
+    TextDrawSetOutline(logonRegister[21], 0);
+    TextDrawSetProportional(logonRegister[21], 1);
+    TextDrawSetShadow(logonRegister[21], 1);
+    TextDrawUseBox(logonRegister[21], 1);
+    TextDrawBoxColor(logonRegister[21], 50);
+    TextDrawTextSize(logonRegister[21], 340.000000, 0.000000);
+    TextDrawSetSelectable(logonRegister[21], 0);
+
+    logonRegister[22] = TextDrawCreate(341.000000, 214.000000, "COLOQUE UMA SENHA");
+    TextDrawBackgroundColor(logonRegister[22], 255);
+    TextDrawFont(logonRegister[22], 2);
+    TextDrawLetterSize(logonRegister[22], 0.170000, 1.000000);
+    TextDrawColor(logonRegister[22], 1299888127);
+    TextDrawSetOutline(logonRegister[22], 0);
+    TextDrawSetProportional(logonRegister[22], 1);
+    TextDrawSetShadow(logonRegister[22], 0);
+    TextDrawSetSelectable(logonRegister[22], 0);
+
+    logonRegister[23] = TextDrawCreate(480.000000, 269.000000, "_");
+    TextDrawBackgroundColor(logonRegister[23], 255);
+    TextDrawFont(logonRegister[23], 1);
+    TextDrawLetterSize(logonRegister[23], 0.500000, 1.400002);
+    TextDrawColor(logonRegister[23], -1);
+    TextDrawSetOutline(logonRegister[23], 0);
+    TextDrawSetProportional(logonRegister[23], 1);
+    TextDrawSetShadow(logonRegister[23], 1);
+    TextDrawUseBox(logonRegister[23], 1);
+    TextDrawBoxColor(logonRegister[23], -303174145);
+    TextDrawTextSize(logonRegister[23], 339.000000, 0.000000);
+    TextDrawSetSelectable(logonRegister[23], 0);
+
+    logonRegister[24] = TextDrawCreate(479.000000, 268.000000, "_");
+    TextDrawBackgroundColor(logonRegister[24], 255);
+    TextDrawFont(logonRegister[24], 1);
+    TextDrawLetterSize(logonRegister[24], 0.500000, 1.600002);
+    TextDrawColor(logonRegister[24], -1);
+    TextDrawSetOutline(logonRegister[24], 0);
+    TextDrawSetProportional(logonRegister[24], 1);
+    TextDrawSetShadow(logonRegister[24], 1);
+    TextDrawUseBox(logonRegister[24], 1);
+    TextDrawBoxColor(logonRegister[24], -303174145);
+    TextDrawTextSize(logonRegister[24], 340.000000, 0.000000);
+    TextDrawSetSelectable(logonRegister[24], 0);
+
+    logonRegister[25] = TextDrawCreate(479.000000, 287.000000, "_");
+    TextDrawBackgroundColor(logonRegister[25], 255);
+    TextDrawFont(logonRegister[25], 1);
+    TextDrawLetterSize(logonRegister[25], 0.500000, -0.399996);
+    TextDrawColor(logonRegister[25], -1);
+    TextDrawSetOutline(logonRegister[25], 0);
+    TextDrawSetProportional(logonRegister[25], 1);
+    TextDrawSetShadow(logonRegister[25], 1);
+    TextDrawUseBox(logonRegister[25], 1);
+    TextDrawBoxColor(logonRegister[25], 50);
+    TextDrawTextSize(logonRegister[25], 340.000000, 0.000000);
+    TextDrawSetSelectable(logonRegister[25], 0);
+
+    logonRegister[26] = TextDrawCreate(341.000000, 254.000000, "Insira o codigo da sua conta Yeeah");
+    TextDrawBackgroundColor(logonRegister[26], 255);
+    TextDrawFont(logonRegister[26], 2);
+    TextDrawLetterSize(logonRegister[26], 0.170000, 1.000000);
+    TextDrawColor(logonRegister[26], 1299888127);
+    TextDrawSetOutline(logonRegister[26], 0);
+    TextDrawSetProportional(logonRegister[26], 1);
+    TextDrawSetShadow(logonRegister[26], 0);
+    TextDrawSetSelectable(logonRegister[26], 0);
+
+    logonRegister[27] = TextDrawCreate(453.000000, 266.000000, "icone_ajudaPIN");
+    TextDrawBackgroundColor(logonRegister[27], 0);
+    TextDrawFont(logonRegister[27], 5);
+    TextDrawLetterSize(logonRegister[27], 0.500000, 1.000000);
+    TextDrawColor(logonRegister[27], -1);
+    TextDrawSetOutline(logonRegister[27], 0);
+    TextDrawSetProportional(logonRegister[27], 1);
+    TextDrawSetShadow(logonRegister[27], 1);
+    TextDrawUseBox(logonRegister[27], 1);
+    TextDrawBoxColor(logonRegister[27], 255);
+    TextDrawTextSize(logonRegister[27], 28.000000, 18.000000);
+    TextDrawSetPreviewModel(logonRegister[27], 1239);
+    TextDrawSetPreviewRot(logonRegister[27], -2.000000, 0.000000, -180.000000, 1.000000);
+    TextDrawSetSelectable(logonRegister[27], 0);
+
+    logonRegister[28] = TextDrawCreate(374.000000, 289.500000, "LD_BEAT:chit");
+    TextDrawBackgroundColor(logonRegister[28], 255);
+    TextDrawFont(logonRegister[28], 4);
+    TextDrawLetterSize(logonRegister[28], 0.500000, 1.000000);
+    TextDrawColor(logonRegister[28], 50);
+    TextDrawSetOutline(logonRegister[28], 0);
+    TextDrawSetProportional(logonRegister[28], 1);
+    TextDrawSetShadow(logonRegister[28], 1);
+    TextDrawUseBox(logonRegister[28], 1);
+    TextDrawBoxColor(logonRegister[28], 255);
+    TextDrawTextSize(logonRegister[28], 24.000000, 27.000000);
+    TextDrawSetSelectable(logonRegister[28], 0);
+
+    logonRegister[29] = TextDrawCreate(373.000000, 288.000000, "LD_BEAT:chit");
+    TextDrawBackgroundColor(logonRegister[29], 255);
+    TextDrawFont(logonRegister[29], 4);
+    TextDrawLetterSize(logonRegister[29], 0.500000, 1.000000);
+    TextDrawColor(logonRegister[29], 239905023);
+    TextDrawSetOutline(logonRegister[29], 0);
+    TextDrawSetProportional(logonRegister[29], 1);
+    TextDrawSetShadow(logonRegister[29], 1);
+    TextDrawUseBox(logonRegister[29], 1);
+    TextDrawBoxColor(logonRegister[29], 255);
+    TextDrawTextSize(logonRegister[29], 24.000000, 27.000000);
+    TextDrawSetSelectable(logonRegister[29], 0);
+
+    logonRegister[30] = TextDrawCreate(424.000000, 288.500000, "LD_BEAT:chit");
+    TextDrawBackgroundColor(logonRegister[30], 255);
+    TextDrawFont(logonRegister[30], 4);
+    TextDrawLetterSize(logonRegister[30], 0.500000, 1.000000);
+    TextDrawColor(logonRegister[30], 50);
+    TextDrawSetOutline(logonRegister[30], 0);
+    TextDrawSetProportional(logonRegister[30], 1);
+    TextDrawSetShadow(logonRegister[30], 1);
+    TextDrawUseBox(logonRegister[30], 1);
+    TextDrawBoxColor(logonRegister[30], 255);
+    TextDrawTextSize(logonRegister[30], 25.000000, 28.000000);
+    TextDrawSetSelectable(logonRegister[30], 0);
+
+    logonRegister[31] = TextDrawCreate(424.000000, 288.000000, "LD_BEAT:chit");
+    TextDrawBackgroundColor(logonRegister[31], 255);
+    TextDrawFont(logonRegister[31], 4);
+    TextDrawLetterSize(logonRegister[31], 0.500000, 1.000000);
+    TextDrawColor(logonRegister[31], 239905023);
+    TextDrawSetOutline(logonRegister[31], 0);
+    TextDrawSetProportional(logonRegister[31], 1);
+    TextDrawSetShadow(logonRegister[31], 1);
+    TextDrawUseBox(logonRegister[31], 1);
+    TextDrawBoxColor(logonRegister[31], 255);
+    TextDrawTextSize(logonRegister[31], 24.000000, 27.000000);
+    TextDrawSetSelectable(logonRegister[31], 0);
+
+    logonRegister[32] = TextDrawCreate(439.000000, 294.600006, "_");
+    TextDrawBackgroundColor(logonRegister[32], 255);
+    TextDrawFont(logonRegister[32], 1);
+    TextDrawLetterSize(logonRegister[32], 0.000000, 1.500002);
+    TextDrawColor(logonRegister[32], -1);
+    TextDrawSetOutline(logonRegister[32], 0);
+    TextDrawSetProportional(logonRegister[32], 1);
+    TextDrawSetShadow(logonRegister[32], 1);
+    TextDrawUseBox(logonRegister[32], 1);
+    TextDrawBoxColor(logonRegister[32], 239905023);
+    TextDrawTextSize(logonRegister[32], 382.000000, 0.000000);
+    TextDrawSetSelectable(logonRegister[32], 0);
+
+    logonRegister[33] = TextDrawCreate(436.000000, 313.000000, "_");
+    TextDrawBackgroundColor(logonRegister[33], 255);
+    TextDrawFont(logonRegister[33], 1);
+    TextDrawLetterSize(logonRegister[33], 0.500000, -0.399996);
+    TextDrawColor(logonRegister[33], -1);
+    TextDrawSetOutline(logonRegister[33], 0);
+    TextDrawSetProportional(logonRegister[33], 1);
+    TextDrawSetShadow(logonRegister[33], 1);
+    TextDrawUseBox(logonRegister[33], 1);
+    TextDrawBoxColor(logonRegister[33], 50);
+    TextDrawTextSize(logonRegister[33], 386.000000, 0.000000);
+    TextDrawSetSelectable(logonRegister[33], 0);
+
+    logonRegister[34] = TextDrawCreate(411.000000, 297.000000, "Proximo");
+    TextDrawAlignment(logonRegister[34], 2);
+    TextDrawBackgroundColor(logonRegister[34], 255);
+    TextDrawFont(logonRegister[34], 2);
+    TextDrawLetterSize(logonRegister[34], 0.170000, 1.000000);
+    TextDrawColor(logonRegister[34], -1);
+    TextDrawSetOutline(logonRegister[34], 0);
+    TextDrawSetProportional(logonRegister[34], 1);
+    TextDrawSetShadow(logonRegister[34], 0);
+    TextDrawSetSelectable(logonRegister[34], 0);
+    return 1;
+}
+
+CreatePlayerTextDrawsRegister(playerid)
+{
+    /*                  -----------   Player Textdraws - Local de registro    -----------                */
+    logonRegister_Player[playerid][0] = CreatePlayerTextDraw(playerid, 409.000000, 190.000000, "Nome_Sobrenome");
+    PlayerTextDrawAlignment(playerid, logonRegister_Player[playerid][0], 2);
+    PlayerTextDrawBackgroundColor(playerid, logonRegister_Player[playerid][0], 255);
+    PlayerTextDrawFont(playerid, logonRegister_Player[playerid][0], 2);
+    PlayerTextDrawLetterSize(playerid, logonRegister_Player[playerid][0], 0.170000, 1.000000);
+    PlayerTextDrawColor(playerid, logonRegister_Player[playerid][0], 1970828799);
+    PlayerTextDrawSetOutline(playerid, logonRegister_Player[playerid][0], 0);
+    PlayerTextDrawSetProportional(playerid, logonRegister_Player[playerid][0], 1);
+    PlayerTextDrawSetShadow(playerid, logonRegister_Player[playerid][0], 0);
+    PlayerTextDrawSetSelectable(playerid, logonRegister_Player[playerid][0], 0);
+    
+    logonRegister_Player[playerid][1] = CreatePlayerTextDraw(playerid, 409.000000, 230.000000, "]]]]]]]");
+    PlayerTextDrawAlignment(playerid, logonRegister_Player[playerid][1], 2);
+    PlayerTextDrawBackgroundColor(playerid, logonRegister_Player[playerid][1], 255);
+    PlayerTextDrawFont(playerid, logonRegister_Player[playerid][1], 2);
+    PlayerTextDrawLetterSize(playerid, logonRegister_Player[playerid][1], 0.170000, 1.000000);
+    PlayerTextDrawColor(playerid, logonRegister_Player[playerid][1], 1970828799);
+    PlayerTextDrawSetOutline(playerid, logonRegister_Player[playerid][1], 0);
+    PlayerTextDrawSetProportional(playerid, logonRegister_Player[playerid][1], 1);
+    PlayerTextDrawSetShadow(playerid, logonRegister_Player[playerid][1], 0);
+    PlayerTextDrawSetSelectable(playerid, logonRegister_Player[playerid][1], 0);
+    
+    logonRegister_Player[playerid][2] = CreatePlayerTextDraw(playerid, 409.000000, 270.000000, "codigo");
+    PlayerTextDrawAlignment(playerid, logonRegister_Player[playerid][2], 2);
+    PlayerTextDrawBackgroundColor(playerid, logonRegister_Player[playerid][2], 255);
+    PlayerTextDrawFont(playerid, logonRegister_Player[playerid][2], 2);
+    PlayerTextDrawLetterSize(playerid, logonRegister_Player[playerid][2], 0.170000, 1.000000);
+    PlayerTextDrawColor(playerid, logonRegister_Player[playerid][2], 1970828799);
+    PlayerTextDrawSetOutline(playerid, logonRegister_Player[playerid][2], 0);
+    PlayerTextDrawSetProportional(playerid, logonRegister_Player[playerid][2], 1);
+    PlayerTextDrawSetShadow(playerid, logonRegister_Player[playerid][2], 0);
+    PlayerTextDrawSetSelectable(playerid, logonRegister_Player[playerid][2], 0);
+    return 1;
+}

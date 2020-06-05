@@ -1,0 +1,84 @@
+
+
+
+/*                                                            ____      _____  _____    ____
+                                                    |\    /| /      /\  |    \ |    \  /
+                                                    | \  / | |      \/  |      |       |
+                                                    |  \/  | |          |____/ |____/  |  ___
+                                                    |      | |      /\  |    | |       |     |
+                                                    |      | \____  \/  |    | |       \_____/
+                                                                        
+                -----------------------------------------------------------------------------------------------------------------
+                |                                                                                                               |
+                |                                                                                                               |
+                |               Nome: Configurações de hostname e afins                                                         |
+                |          Descrição: Configura as opções da tabela server_settings, setando a password, versão e muitas outras | 
+                |                     coisas importantes.                                                                       |
+                |   Última alteração: 11/05/2016 - 19:52                                                                        |
+                |               Type: none                                                                                      |
+                |                                                                                                               |
+                |                                                                                                               |
+                ---------------------------------------------------------------------------------------------------------------*/
+
+/* Include necessária para o funcionamento do script. */
+#include "inc\YSI\y_hooks"
+
+
+//--------------------------------------------------------
+
+
+/* Funções */
+hook OnGameModeInit()
+{
+    printc(CONSOLE_BLUE, "* INFO: Fazendo as configuracoes iniciais do servidor.");
+    mysql_query(mysqlConnect, "SELECT * FROM `server_settings` WHERE `id` = 1"); 
+    if(cache_num_rows() == 1)
+    {
+        /* Seta os dados em seus respectivos lugares. */
+        new string[9+50];
+        new Field[50];
+        cache_get_field_content(0, "hostname", Field);
+        format(string, sizeof(string), "hostname %s", Field);
+        SendRconCommand(string); 
+            //Seta os dados do hostname.
+
+
+        cache_get_field_content(0, "password", Field);
+        format(string, sizeof(string), "password %s", Field);
+        SendRconCommand(string);
+            //Seta os dados da senha do servidor..
+
+
+        cache_get_field_content(0, "language", Field); 
+        format(string, sizeof(string), "language %s", Field);
+        SendRconCommand(string);
+            //Seta os dados da lingua do server...
+
+
+        cache_get_field_content(0, "mapname", Field);
+        format(string, sizeof(string), "mapname %s", Field);
+        SendRconCommand(string);
+            //Seta o mapname..
+
+
+        cache_get_field_content(0, "weburl", Field);
+        format(string, sizeof(string), "weburl %s", Field);
+        SendRconCommand(string);
+            //Seta o site do servidor.
+
+
+        cache_get_field_content(0, "modname", Field);
+        format(string, sizeof(string), "%s", Field);
+        SetGameModeText(string);
+            //Seta o modo de jogo.
+
+
+        cache_get_field_content(0, "rconpass", Field);
+        format(string, sizeof(string), "rconpass %s", Field);
+        SendRconCommand(string);
+            //Seta a rcon do servidor.
+        return 1;
+    }
+    else printc(CONSOLE_RED, "* ERRO: Nao foi possivel setar as configuracoes iniciais.");
+    return 1;
+}

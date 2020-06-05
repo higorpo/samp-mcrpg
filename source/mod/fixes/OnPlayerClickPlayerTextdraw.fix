@@ -1,0 +1,6 @@
+public OnPlayerClickPlayerTextDraw(playerid, PlayerText:playertextid)
+{
+	PlayerClickPlayerTextdraw(playerid, playertextid);
+	newsClickPlayerTextdraw(playerid, playertextid);
+	return 1;
+}

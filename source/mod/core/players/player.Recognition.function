@@ -1,0 +1,118 @@
+/*                                                            ____      _____  _____    ____
+                                                    |\    /| /      /\  |    \ |    \  /
+                                                    | \  / | |      \/  |      |       |
+                                                    |  \/  | |          |____/ |____/  |  ___
+                                                    |      | |      /\  |    | |       |     |
+                                                    |      | \____  \/  |    | |       \_____/
+                                                                        
+                -----------------------------------------------------------------------------------------------------------------
+                |                                                                                                               |
+                |                                                                                                               |
+                |               Nome: Reconhecimento de players                                                                 |
+                |          Descrição: --                                                                                        |
+                |   Última alteração: 27/05/2016 - 10:16                                                                        |
+                |               Type: function                                                                                  |
+                |                                                                                                               |
+                |                                                                                                               |
+                ---------------------------------------------------------------------------------------------------------------*/
+
+// Livrarias necessarias para o funcionamento geral do script.
+#include "inc\YSI\y_hooks"
+
+
+//------------------------------------------------------------------------------
+
+
+forward OnPlayerValidatingRegister(playerid, ip[20], serial[50]);
+public OnPlayerValidatingRegister(playerid, ip[20], serial[50])
+{
+    return 1;
+}
+
+
+//------------------------------------------------------------------------------
+
+
+GetPlayerLastIP(playerid)
+{
+    new str[50];
+    mysql_format(mysqlConnect, str, sizeof(str), "SELECT `lastip` FROM `accounts` WHERE `id` = '%d'", pInfo[playerid][id]);
+    mysql_query(mysqlConnect, str);
+
+    new ip[20];
+    if(cache_num_rows() == 1)
+    {
+        cache_get_field_content(0, "lastip", ip);
+    }
+    return ip;
+}
+
+GetPlayerNameLastIP(pname[MAX_PLAYER_NAME])
+{
+    new str[50+24];
+    mysql_format(mysqlConnect, str, sizeof(str), "SELECT `lastip` FROM `accounts` WHERE `name` = '%e'", pname);
+    mysql_query(mysqlConnect, str);
+
+    new ip[20];
+    if(cache_num_rows() == 1)
+    {
+        cache_get_field_content(0, "lastip", ip);
+    }
+    return ip;
+}
+
+GetPlayerFirstIP(playerid)
+{
+    new str[52];
+    mysql_format(mysqlConnect, str, sizeof(str), "SELECT `firstip` FROM `accounts` WHERE `id` = '%d'", pInfo[playerid][id]);
+    mysql_query(mysqlConnect, str);
+
+    new ip[20];
+    if(cache_num_rows() == 1)
+    {
+        cache_get_field_content(0, "firstip", ip);
+    }
+    return ip;
+}
+
+GetPlayerNameFirstIP(pname[MAX_PLAYER_NAME])
+{
+    new str[52+24];
+    mysql_format(mysqlConnect, str, sizeof(str), "SELECT `firstip` FROM `accounts` WHERE `name` = '%e'", pname);
+    mysql_query(mysqlConnect, str);
+
+    new ip[20];
+    if(cache_num_rows() == 1)
+    {
+        cache_get_field_content(0, "firstip", ip);
+    }
+    return ip;
+}
+
+GetPlayerNameSerial(pname[MAX_PLAYER_NAME])
+{
+    new str[51+24];
+    mysql_format(mysqlConnect, str, sizeof(str), "SELECT `serial` FROM `accounts` WHERE `name` = '%e'", pname);
+    mysql_query(mysqlConnect, str);
+
+    new serial[50];
+    if(cache_num_rows() == 1)
+    {
+        cache_get_field_content(0, "serial", serial);
+    }
+    return serial;
+}
+
+bool:CompareIP(pname[MAX_PLAYER_NAME], ip[20], lastip = true)
+{
+    if(!strcmp(lastip ? (GetPlayerNameLastIP(pname)) : (GetPlayerNameFirstIP(pname)), ip))
+        return true;
+    else return false;
+}
+
+bool:CompareSerial(pname[MAX_PLAYER_NAME], serial[50])
+{
+    if(!strcmp(GetPlayerNameSerial(pname), serial))
+        return true;
+    else return false;
+}

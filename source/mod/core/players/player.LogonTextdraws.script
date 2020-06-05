@@ -1,0 +1,2811 @@
+/*                                                            ____      _____  _____    ____
+                                                    |\    /| /      /\  |    \ |    \  /
+                                                    | \  / | |      \/  |      |       |
+                                                    |  \/  | |          |____/ |____/  |  ___
+                                                    |      | |      /\  |    | |       |     |
+                                                    |      | \____  \/  |    | |       \_____/
+                                                                        
+                -----------------------------------------------------------------------------------------------------------------
+                |                                                                                                               |
+                |                                                                                                               |
+                |               Nome: Login & Registro                                                                          |
+                |          Descrição: --                                                                                        |
+                |   Última alteração: 27/05/2016 - 13:22                                                                        |
+                |               Type: script                                                                                    |
+                |                                                                                                               |
+                |                                                                                                               |
+                ---------------------------------------------------------------------------------------------------------------*/
+
+// Livrarias necessarias para o funcionamento geral do script.
+#include "inc\YSI\y_hooks"
+
+//-----------------------------------------------------------------------------
+
+
+// enums
+enum // Enum para as dialogs
+{
+    // Dialogs de login.
+    @lDialog_PlayerName,
+    @lDialog_Password,
+
+
+    // Dialogs de registro.
+    @rDialog_PlayerName,
+    @rDialog_Password,
+    @rDialog_Email
+}
+
+enum // Tipagem na qual serão guardados os números das teles para depois serem usadas no Show/HideTextdraws.
+{
+    tela_base,
+    tela_inicio,
+    tela_register,
+    tela_register@lastregisters,
+    tela_register@confirmmail,
+    tela_register@inputdados,
+    tela_community,
+    tela_credits
+}
+
+enum // Tipagem para identificar em qual textdraw sofrerá modificações..
+{
+    textdraw_Playername,
+    textdraw_Password,
+    textdraw_Email
+}
+
+// textdraws base
+new Text:logonIndex_base[9]; // Textdraws base.
+new PlayerText:logonIndex_basePlayer[MAX_PLAYERS][18]; // Player textdraw base.
+
+new Text:logonLogin[18];
+new PlayerText:logonLogin_Player[MAX_PLAYERS][2]; // Textdraws de login.
+
+new Text:logonRegister[35];
+new PlayerText:logonRegister_Player[MAX_PLAYERS][3]; // Textdraws de registro.
+
+new PlayerText:logonRegister_two@oldTxt[27]; // Textdraws da parte esquerda da tela, que ficará as informações digitadas na outra tela de registro.
+new PlayerText:logonRegister_two@flexa[11]; // flexa
+new PlayerText:logonRegister_two@cnfMail[17]; // Textdraws da confirmação do e-mail
+
+
+// variaveis
+new timercam[MAX_PLAYERS]; // timer.
+new timer@codigo_cfn__mail[MAX_PLAYERS];
+
+// forward
+forward LoadPlayerAccount(playerid);
+forward OnCameraLocalTimer(playerid);
+forward VerifyIfCnfMail(playerid);
+forward Load@__nextEtapaRegister(playerid);
+
+
+//-----------------------------------------------------------------------------
+
+
+hook OnGameModeInit()
+{
+    printc(CONSOLE_GREY, "-> Carregando textdraws da tela inicial.");
+
+    CreateTextdrawsLogon(tela_base);
+    CreateTextdrawsLogon(tela_inicio);
+    CreateTextdrawsLogon(tela_register);
+    return 1;
+}
+
+hook OnPlayerConnect(playerid)
+{
+    CreatePlayerTextdrawsLogon(playerid, tela_base);
+    CreatePlayerTextdrawsLogon(playerid, tela_inicio);
+
+    SetTimerEx("asdiuads", 1000, true, "i", playerid);
+    return 1;
+}
+
+forward asdiuads(playerid);
+public asdiuads(playerid)
+{
+    new string[121];
+    format(string, sizeof(string), "Tela: %d", GetPlayerTelaID(playerid));
+    SendClientMessage(playerid, -1, string);
+    return 1;
+}
+
+
+hook OnPlayerClickTextDraw(playerid, Text:clickedid)
+{
+    if(_:clickedid == INVALID_TEXT_DRAW)
+    {
+        if(GetPlayerTelaID(playerid) != -1) return SelectTextDraw(playerid, 0xFFFFFFFF);
+        return 1;
+    }
+    if(clickedid == logonIndex_base[8])
+    {
+        HideLogon(playerid, tela_base);
+        HideLogon(playerid, tela_inicio);
+        Kick(playerid);
+        return 1;
+    }
+
+
+    /* Tela de login */
+    if(clickedid == logonLogin[4]) // Botão de dúvida / nick.
+    {
+        // Colocar depois em textdraw.
+        ShowPlayerDialog(playerid, INVALID_DIALOG, DIALOG_STYLE_MSGBOX, "Alerta", 
+            "{FFFFFF}Coloque aqui o nome do seu personagem no campo.", "Fechar", "");
+        return 1;
+    }
+
+    if(clickedid == logonLogin[15]) // Botão para entrar no servidor.
+    {
+
+        // Botão de entrar, login.
+        new playername[MAX_PLAYER_NAME], 
+            playerpassword[20]
+        ;
+
+        GetPVarString(playerid, "login@playername", playername, sizeof(playername));
+        GetPVarString(playerid, "login@password", playerpassword, sizeof(playerpassword));
+
+
+        /* Verifica se o usuário preencheu todos os campos corretamente. */
+        if(strlen(playername) < 1 || strlen(playerpassword) < 1) return 0; // Exibe mensagem de erro;
+
+
+        SetPlayerName(playerid, playername);
+
+
+        /* Caso o player tenha preenchido todos os campos.*/
+        new query[404+24];
+
+
+        mysql_format(mysqlConnect, query, sizeof(query),"SELECT `id` FROM `accounts` WHERE `name` = '%e' AND BINARY `password` = sha1('%e')", 
+            playername, 
+            playerpassword);
+        mysql_query(mysqlConnect, query); // query(consulta).
+
+
+        if(cache_num_rows() == 0) // Se a senha estiver errada.
+        {
+            pInfo[playerid][errorPass] ++;
+            SendClientMessage(playerid, -1, "[debug] Você errou sua senha.");
+            // Caso o player erre a senha, envia uma mensagem para ele avisando-o que ele errou sua senha.
+
+            if(pInfo[playerid][errorPass] == 4)
+            {
+                /* Esconde todas as textdraws de login. */
+                HideLogon(playerid, tela_base);
+                HideLogon(playerid, tela_inicio);
+                HideLogon(playerid, tela_community);
+                HideLogon(playerid, tela_register);
+                HideLogon(playerid, tela_register@lastregisters);
+                HideLogon(playerid, tela_register@confirmmail);
+                HideLogon(playerid, tela_register@inputdados);
+                HideLogon(playerid, tela_credits);
+
+                DestroyPlayerTextdrawsLogon(playerid, tela_base);
+                DestroyPlayerTextdrawsLogon(playerid, tela_inicio);
+                DestroyPlayerTextdrawsLogon(playerid, tela_community);
+                DestroyPlayerTextdrawsLogon(playerid, tela_register);
+                DestroyPlayerTextdrawsLogon(playerid, tela_register@lastregisters);
+                DestroyPlayerTextdrawsLogon(playerid, tela_register@confirmmail);
+                DestroyPlayerTextdrawsLogon(playerid, tela_register@inputdados);
+                DestroyPlayerTextdrawsLogon(playerid, tela_credits);
+
+                ResetAllDadosLogon(playerid);
+                Kick(playerid);
+                return 1;
+            }
+        }
+
+        else if(cache_num_rows() > 0) // Se a senha estiver correta.
+        {   
+            /* Pega as vars necessárias */
+            pInfo[playerid][id] = cache_get_field_content_int(0, "id");
+
+
+            /* Faz a query para carregar a conta do player.. */
+            mysql_format(mysqlConnect, query, sizeof(query), "SELECT * FROM `accounts` \
+                                                                INNER JOIN `accounts_data` ON `accounts`.`id` = `accounts_data`.`id_player` \
+                                                                LEFT JOIN `accounts_rank` ON `accounts`.`id` = `accounts_rank`.`id_player` \
+                                                                WHERE `accounts`.`name` = '%e'", playername); 
+            mysql_pquery(mysqlConnect, query, "LoadPlayerAccount", "i", playerid);
+
+            /* Outras configurações */
+            ResetAllDadosLogon(playerid); // Reseta os dados do player.
+        }
+        return 1;
+    }
+
+    if(clickedid == logonLogin[17]) // Botão registrar-se.
+    {
+        if(GetPlayerTelaID(playerid) == tela_register) return 0;
+
+        HideLogon(playerid, tela_base);
+        HideLogon(playerid, tela_inicio);
+        DestroyPlayerTextdrawsLogon(playerid, tela_base);
+        DestroyPlayerTextdrawsLogon(playerid, tela_inicio);
+
+        CreatePlayerTextdrawsLogon(playerid, tela_register);
+        ShowLogon(playerid, tela_register); // mostra as textdraws de registro
+
+        new 
+            name@saved[MAX_PLAYER_NAME],
+            pass@saved[21],
+            mail@saved[41]
+        ;
+
+        GetPVarString(playerid, "register@playername", name@saved, MAX_PLAYER_NAME);
+        GetPVarString(playerid, "register@password", pass@saved, 21);
+        GetPVarString(playerid, "register@email", mail@saved, 41);
+
+
+        PlayerTextDrawSetString(playerid, logonRegister_Player[playerid][0], strlen(name@saved) > 0 ? name@saved : "Nome_Sobrenome");
+        PasswordEncode(pass@saved, strlen(pass@saved));   
+        PlayerTextDrawSetString(playerid, logonRegister_Player[playerid][1], strlen(pass@saved) > 0 ? pass@saved : "]]]]]]]"); 
+        new string[41];
+        strmid(string, mail@saved, 0, strfind(mail@saved, "@"));
+        format(mail@saved, sizeof(mail@saved), string);
+        PlayerTextDrawSetString(playerid, logonRegister_Player[playerid][2], strlen(mail@saved) > 0 ? mail@saved : "e-mail");
+        return 1;
+    }
+
+
+    /* Tela de registro */
+    if(clickedid == logonRegister[9]) // Botão sair de registro; 
+    {
+        if(GetPlayerTelaID(playerid) == tela_register)
+        {
+            // Se ele estiveres na tela de registro
+
+            HideLogon(playerid, tela_register);
+            DestroyPlayerTextdrawsLogon(playerid, tela_register);
+
+            CreatePlayerTextdrawsLogon(playerid, tela_base);
+            CreatePlayerTextdrawsLogon(playerid, tela_inicio);
+
+            ShowLogon(playerid, tela_base);
+            ShowLogon(playerid, tela_inicio);
+
+            new 
+                name@saved[MAX_PLAYER_NAME],
+                pass@saved[21]
+            ;
+
+            GetPVarString(playerid, "login@playername", name@saved, MAX_PLAYER_NAME);
+            GetPVarString(playerid, "login@password", pass@saved, 21);
+
+            PlayerTextDrawSetString(playerid, logonLogin_Player[playerid][0], strlen(name@saved) > 0 ? name@saved : "Nome_Sobrenome");
+            PasswordEncode(pass@saved, strlen(pass@saved));   
+            PlayerTextDrawSetString(playerid, logonLogin_Player[playerid][1], strlen(pass@saved) > 0 ? pass@saved : "]]]]]]]"); 
+
+
+        }
+        return 1;
+    }
+
+    if(clickedid == logonRegister[34]) // Botão registro
+    {
+        if(GetPlayerTelaID(playerid) == tela_register)
+        {
+            /* Salva os valores */
+            new playerMail[41];
+            GetPVarString(playerid, "register@email", playerMail, sizeof(playerMail));
+
+            new playerName[MAX_PLAYER_NAME];
+            GetPVarString(playerid, "register@playername", playerName, sizeof(playerName));
+
+            new playerPassword[20];
+            GetPVarString(playerid, "register@password", playerPassword, sizeof(playerPassword));
+
+            /* Verifica se o usuário preencheu todos os campos corretamente. */
+            if(strlen(playerName) < 1 || strlen(playerPassword) < 1 || strlen(playerMail) < 1) return SendClientMessage(playerid, -1, "Não preencheu tudo."); // Mensagem de erro
+
+
+
+            /* Configurações para mandar pra proxima tela.  */
+
+
+            // Tela que mostra os dados digitados na tela anterior.
+            new confirmouMail = GetPVarInt(playerid, "confirmou__email@player"); // Verificar se o usuário já confirmou seu e-mail.
+
+            HideLogon(playerid, tela_register);
+            DestroyPlayerTextdrawsLogon(playerid, tela_register);
+            
+            CreatePlayerTextdrawsLogon(playerid, tela_register@lastregisters);
+            ShowLogon(playerid, tela_register@lastregisters);
+
+            PlayerTextDrawSetString(playerid, logonRegister_two@oldTxt[15], playerName);
+            PlayerTextDrawSetString(playerid, logonRegister_two@oldTxt[20], playerPassword);
+            PlayerTextDrawSetString(playerid, logonRegister_two@oldTxt[25], playerMail);
+
+
+            if(confirmouMail == 0)
+            {
+                /* Confirmação do e-mail */
+
+                // Cria o código.
+                new codigo@cnf[21];
+                format(codigo@cnf, 21, GetRandomString(20));
+                SetPVarString(playerid, "codigo_cfn__mail", codigo@cnf);
+
+                // Insere o código na tabela para aguardar a confirmação.
+                new query[57+21];
+                mysql_format(mysqlConnect, query, sizeof(query), "INSERT INTO `reg_confirm`(`token_confirmed`) VALUES ('%e');", codigo@cnf);
+                mysql_query(mysqlConnect, query, false);
+
+                // Mandar e-mail com o código token.
+
+
+                // Timer para verificar se ele confirmou o e-mail.
+                timer@codigo_cfn__mail[playerid] = SetTimerEx("VerifyIfCnfMail", 2000, true, "i", playerid);
+
+
+                /* Mostra a tela para confirmação do e-mail. */
+                CreatePlayerTextdrawsLogon(playerid, tela_register@confirmmail);
+                ShowLogon(playerid, tela_register@confirmmail);
+            }
+            else
+            {
+                // Se ele confirmou o e-mail, mostra a tela para o player colocar as novas infos.
+            }
+            return 1;
+        }
+        return 1;
+    }
+
+    if(clickedid == logonRegister[18]) // Icone de ajuda usuário
+    {
+
+        new string[1150];
+        strcat(string, "{FFFFFF}Coloque o nome que o seu personagem terá em sua nova vida no servidor.\nO nome do seu personagem deve ser um nome real, ");
+        strcat(string, "de preferencia que seja seu nome real, porém se preferir colocar um nome ficticio,\nsaíba que ele deve conter as mesmas ");
+        strcat(string, "caracteristicas de um nome real, ou seja, ele deverá conter Nome & Sobrenome.\nVocê ficará com este nick(nome) ");
+        strcat(string, "até decidir troca-lo por um outro nick, seguindo as informações abaixo:\n{23B528}Modo legal: A troca pode ser feita em um cartório no servidor, porém de acordo ");
+        strcat(string, "com as regras implementadas no servidor.\nA troca também custará a quantia de R$10.000 que será destinada aos ");
+        strcat(string, "cofres públicos.\nFique ciente que a troca só poderá ser efetuada uma única vez, e que depois terá de ficar com este nome para sempre.\n");
+        strcat(string, "{F35353}Modo ilegal: Caso não queira pagar tanto dinheiro, e precise trocar mais de uma vez o seu nick, você poderá contratar\num profissional na área de ");
+        strcat(string, "disfarces que fornecerá a você um novo nome, e uma nova vida. Perfeito para fugitivos da polícia..\nDepois de trocar seu nome, todos os seus rastros do passado ficarão ");
+        strcat(string, "totalmente apagados, facilitando assim sua fuga da polícia.");
+
+        ShowPlayerDialog(playerid, INVALID_DIALOG, DIALOG_STYLE_MSGBOX, "{FF0000}# {FFFFFF}Alerta", string, "Fechar", "");
+        return 1;
+    }
+
+    if(clickedid == logonRegister[27]) // icone de ajuda e-mail
+    {
+        new string[108+70+1];
+        strcat(string, "{FFFFFF}Insira um endereço de e-mail valido, pois com este e-mail você poderá receber códigos promocionais\n");
+        strcat(string, "{FFFFFF}recuperar sua conta, ver notícias em primeira mão e muito mais.");
+
+        ShowPlayerDialog(playerid, INVALID_DIALOG, DIALOG_STYLE_MSGBOX, "{FF0000}# {FFFFFF}Alerta", string, "Fechar", "");
+        return 1;
+    }
+    return 1;
+}
+
+PlayerClickPlayerTextdraw(playerid, PlayerText:playertextid)
+{
+
+    // botões
+    if(playertextid == logonIndex_basePlayer[playerid][15])
+    {
+        if(GetPlayerTelaID(playerid) == tela_inicio) return 0; // Se o player já estiver na aba inicio, não irá acontecer nada!
+
+        // inicio
+        SetPVarInt(playerid, "telaLogon_telaid", tela_inicio); // Afirma que o player esta na aba da direita, (inicio)
+
+        PlayerTextDrawBoxColor(playerid,logonIndex_basePlayer[playerid][0], 1119897087); // Cor da faixa que fica no topo.
+        PlayerTextDrawSetPreviewModel(playerid, logonIndex_basePlayer[playerid][1], 1273); // icone de casa
+        PlayerTextDrawSetPreviewRot(playerid, logonIndex_basePlayer[playerid][1], 3.000000, 0.000000, 0.000000, 1.000000);
+        PlayerTextDrawSetString(playerid, logonIndex_basePlayer[playerid][2], "inicio"); // texto.
+
+        // botão esquerda
+        PlayerTextDrawBoxColor(playerid,logonIndex_basePlayer[playerid][7], 1119897087); // background do botão
+        PlayerTextDrawBoxColor(playerid,logonIndex_basePlayer[playerid][8], 1119897087); // background do botão
+        PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][9], 1119897087); // background do botão
+        PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][10], 1119897087); // background do botão
+
+        // botão do meio
+        PlayerTextDrawBoxColor(playerid,logonIndex_basePlayer[playerid][3], -269488129); // background do botão
+        PlayerTextDrawBoxColor(playerid,logonIndex_basePlayer[playerid][4], -269488129); // background do botão
+        PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][5], -269488129); // background do botão
+        PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][6], -269488129); // background do botão
+
+        // botão da direita
+        PlayerTextDrawBoxColor(playerid,logonIndex_basePlayer[playerid][11], -269488129);
+        PlayerTextDrawBoxColor(playerid,logonIndex_basePlayer[playerid][12], -269488129);
+        PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][13], -269488129);
+        PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][14], -269488129);
+
+
+        // Texto dos botões
+        PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][15], -1); // cor do botão  da esquerda
+        PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][16], 845592575); // cor do botão do meio
+        PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][17], 845592575); // cor do botão da direita
+
+        // -----------
+
+        // hide textdraws.
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][0]);
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][1]);
+
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][7]);
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][8]);
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][9]);
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][10]);
+
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][3]);
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][4]);
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][5]);
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][6]);
+
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][11]);
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][12]);
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][13]);
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][14]);
+
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][15]);
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][16]);
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][17]);
+
+        // show textdraws
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][0]);
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][1]);
+
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][7]);
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][8]);
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][9]);
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][10]);
+
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][3]);
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][4]);
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][5]);
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][6]);
+
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][11]);
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][12]);
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][13]);
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][14]);
+
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][15]);
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][16]);
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][17]);
+
+        // Função que irá chamar as informações de cada tela.
+        HideLogon(playerid, tela_credits);
+        HideLogon(playerid, tela_community);
+        HideLogon(playerid, tela_register);
+        ShowLogon(playerid, tela_inicio);
+        return 1;
+    }
+    if(playertextid == logonIndex_basePlayer[playerid][16])
+    {
+        if(GetPlayerTelaID(playerid) == tela_community) return 0; // Se o player já estiver na aba inicio, não irá acontecer nada!
+
+        // Comunidade
+        SetPVarInt(playerid, "telaLogon_telaid", tela_community); // Afirma que o player esta na aba da direita, (inicio)
+      
+
+        // Função que irá chamar as informações de cada tela.
+        HideLogon(playerid, tela_credits);
+        HideLogon(playerid, tela_inicio);
+        HideLogon(playerid, tela_register);
+        ShowLogon(playerid, tela_community);
+        return 1;
+    }
+    if(playertextid == logonIndex_basePlayer[playerid][17])
+    {
+        if(GetPlayerTelaID(playerid) == tela_credits) return 0; // Se o player já estiver na aba inicio, não irá acontecer nada!
+
+        // Comunidade
+        SetPVarInt(playerid, "telaLogon_telaid", tela_credits); // Afirma que o player esta na aba da direita, (inicio)
+
+        PlayerTextDrawBoxColor(playerid,logonIndex_basePlayer[playerid][0], -12696577); // Cor da faixa que fica no topo.
+        PlayerTextDrawSetPreviewModel(playerid, logonIndex_basePlayer[playerid][1], 1314); // icone de casa
+        PlayerTextDrawSetPreviewRot(playerid, logonIndex_basePlayer[playerid][1], 3.000000, 0.000000, 0.000000, 1.000000);
+        PlayerTextDrawSetString(playerid, logonIndex_basePlayer[playerid][2], "creditos"); // texto.
+
+        // botão esquerda
+        PlayerTextDrawBoxColor(playerid,logonIndex_basePlayer[playerid][7], -269488129); // background do botão
+        PlayerTextDrawBoxColor(playerid,logonIndex_basePlayer[playerid][8], -269488129); // background do botão
+        PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][9], -269488129); // background do botão
+        PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][10], -269488129); // background do botão
+
+        // botão do meio
+        PlayerTextDrawBoxColor(playerid,logonIndex_basePlayer[playerid][3], -269488129); // background do botão
+        PlayerTextDrawBoxColor(playerid,logonIndex_basePlayer[playerid][4], -269488129); // background do botão
+        PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][5], -269488129); // background do botão
+        PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][6], -269488129); // background do botão
+
+        // botão da direita
+        PlayerTextDrawBoxColor(playerid,logonIndex_basePlayer[playerid][11], -12696577);
+        PlayerTextDrawBoxColor(playerid,logonIndex_basePlayer[playerid][12], -12696577);
+        PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][13], -12696577);
+        PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][14], -12696577);
+
+
+        // Texto dos botões
+        PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][15], 845592575); // cor do botão  da esquerda
+        PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][16], 845592575); // cor do botão do meio
+        PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][17], -1); // cor do botão da direita
+
+        // -----------
+
+        // hide textdraws.
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][0]);
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][1]);
+
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][7]);
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][8]);
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][9]);
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][10]);
+
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][3]);
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][4]);
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][5]);
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][6]);
+
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][11]);
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][12]);
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][13]);
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][14]);
+
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][15]);
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][16]);
+        PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][17]);
+
+        // show textdraws
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][0]);
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][1]);
+
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][7]);
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][8]);
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][9]);
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][10]);
+
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][3]);
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][4]);
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][5]);
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][6]);
+
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][11]);
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][12]);
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][13]);
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][14]);
+
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][15]);
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][16]);
+        PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][17]);
+
+
+
+
+        // Função que irá chamar as informações de cada tela.
+        HideLogon(playerid, tela_community);
+        HideLogon(playerid, tela_inicio);
+        HideLogon(playerid, tela_register);
+        ShowLogon(playerid, tela_credits);
+        return 1;
+    }
+
+
+
+    // Textbox login
+    if(playertextid == logonLogin_Player[playerid][0])
+    {
+        ShowPlayerDialog(playerid, @lDialog_PlayerName, DIALOG_STYLE_INPUT, "{FF0000}#{FFFFFF} Insira seu nick", 
+            "{FFFFFF}Coloque o nome do seu personagem no jogo, exemplo: \"Higor_Oliveira\".", "Pronto", "Sair");
+        return 1;
+    }
+    if(playertextid == logonLogin_Player[playerid][1])
+    {
+        ShowPlayerDialog(playerid, @lDialog_Password, DIALOG_STYLE_PASSWORD, "{FF0000}#{FFFFFF} Coloque sua senha", 
+            "{FFFFFF}Coloque a senha que você usou para se registrar no Majestic:", "Pronto", "Sair");
+        return 1;
+    }
+
+
+
+    // Textbox registro
+    if(playertextid == logonRegister_Player[playerid][0])
+    {
+        // Nome sobrenome
+        ShowPlayerDialog(playerid, @rDialog_PlayerName, DIALOG_STYLE_INPUT, "{FF0000}#{FFFFFF} Insira um novo nick", 
+            "{FFFFFF}Coloque o nome desejado para que seja usado como nome pelo seu personagem.\n\
+            Exemplo: \"Higor_Oliveira\":", "Pronto", "Sair");
+        return 1;
+    }
+    if(playertextid == logonRegister_Player[playerid][1])
+    {
+        // senha
+        ShowPlayerDialog(playerid, @rDialog_Password, DIALOG_STYLE_PASSWORD, "{FF0000}#{FFFFFF} Coloque uma senha", 
+            "{FFFFFF}Coloque uma senha segura & confiavel, de preferencia que somente você saiba-a.\n\n\
+            {23B528}* Lembre-se que as senhas devem ter entre 5 a 20 caracteres\n\
+            * Se você esquecer sua senha, você poderá recupera-la usando o Minha Yeeah\n\
+            {F35353}* Não use a mesma senha que você utiliza em outros sites, principalmente no Minha Yeeah\n\
+            * Não divulgue sua senha para ninguém, nem mesmo para seus amigos\n", "Pronto", "Sair");
+        return 1;
+    }
+    if(playertextid == logonRegister_Player[playerid][2])
+    {
+        // E-mail
+        ShowPlayerDialog(playerid, @rDialog_Email, DIALOG_STYLE_INPUT, "{FF0000}#{FFFFFF} Coloque um e-mail valido", 
+            "{FFFFFF}Por-favor, coloque um e-mail valido:", "Pronto", "Sair");
+        return 1;
+    }
+
+
+
+
+    // Botão voltar da textdraw da segunda tela de registro. Ela não precisava ser clicavel, mais eu decidi por pra depois poder destruí-las e ter espaço para textdraws.
+    if(playertextid == logonRegister_two@oldTxt[26])
+    {
+        if(GetPlayerTelaID(playerid) == tela_register@confirmmail || GetPlayerTelaID(playerid) == tela_register@inputdados)
+        {
+            HideLogon(playerid, tela_register@lastregisters);
+            DestroyPlayerTextdrawsLogon(playerid, tela_register@lastregisters);
+            if(GetPlayerTelaID(playerid) == tela_register@confirmmail)
+            {
+                HideLogon(playerid, tela_register@confirmmail);
+                DestroyPlayerTextdrawsLogon(playerid, tela_register@confirmmail);
+            }
+            else 
+            {
+                HideLogon(playerid, tela_register@inputdados);
+                DestroyPlayerTextdrawsLogon(playerid, tela_register@inputdados);
+            }
+
+            CreatePlayerTextdrawsLogon(playerid, tela_register);
+            ShowLogon(playerid, tela_register);
+
+
+            /* Salva os valores */
+            new playerMail[41];
+            GetPVarString(playerid, "register@email", playerMail, sizeof(playerMail));
+            new playerName[MAX_PLAYER_NAME];
+            GetPVarString(playerid, "register@playername", playerName, sizeof(playerName));
+            new playerPassword[20];
+            GetPVarString(playerid, "register@password", playerPassword, sizeof(playerPassword));
+
+            PlayerTextDrawSetString(playerid, logonRegister_Player[playerid][0], strlen(playerName) > 0 ? playerName : "Nome_Sobrenome");
+            PasswordEncode(playerPassword, strlen(playerPassword));
+            PlayerTextDrawSetString(playerid, logonRegister_Player[playerid][1], strlen(playerPassword) > 0 ? playerPassword : "]]]]]]]");
+            new string[41];
+            strmid(string, playerMail, 0, strfind(playerMail, "@"));
+            format(playerMail, sizeof(playerMail), string);
+            PlayerTextDrawSetString(playerid, logonRegister_Player[playerid][2], strlen(playerMail) > 0 ? playerMail : "e-mail");
+        }
+        return 1;
+    }
+    if(playertextid == logonRegister_two@cnfMail[9])
+    {
+        if(GetPlayerTelaID(playerid) == tela_register@confirmmail)
+        {
+            HideLogon(playerid, tela_register@lastregisters);
+            HideLogon(playerid, tela_register@confirmmail);
+            DestroyPlayerTextdrawsLogon(playerid, tela_register@lastregisters);
+            DestroyPlayerTextdrawsLogon(playerid, tela_register@confirmmail);
+
+            CreatePlayerTextdrawsLogon(playerid, tela_base);
+            CreatePlayerTextdrawsLogon(playerid, tela_inicio);
+            ShowLogon(playerid, tela_base);
+            ShowLogon(playerid, tela_inicio);
+
+            new 
+                name@saved[MAX_PLAYER_NAME],
+                pass@saved[21]
+            ;
+
+            GetPVarString(playerid, "login@playername", name@saved, MAX_PLAYER_NAME);
+            GetPVarString(playerid, "login@password", pass@saved, 21);
+
+            PlayerTextDrawSetString(playerid, logonLogin_Player[playerid][0], strlen(name@saved) > 0 ? name@saved : "Nome_Sobrenome");
+            PasswordEncode(pass@saved, strlen(pass@saved));   
+            PlayerTextDrawSetString(playerid, logonLogin_Player[playerid][1], strlen(pass@saved) > 0 ? pass@saved : "]]]]]]]"); 
+        }
+        return 1;
+    }
+
+
+    // Botão de ajuda confirmação do e-mail 
+    if(playertextid == logonRegister_two@cnfMail[16])
+    {
+        new string[308];
+        strcat(string, "{FFFFFF}Para confirmar seu e-mail, vá até o endereço de e-mail digitado, procure na sua caixa de entrada\n");
+        strcat(string, "ou na lixeira, um e-mail de ativação do e-mail. Após isso, clique sobre o link informado com o token e pronto!\n");
+        strcat(string, "Depois, é só voltar para o servidor e já estará tudo confirmado. Simples e rápido, não é?!");
+
+        ShowPlayerDialog(playerid, INVALID_DIALOG, DIALOG_STYLE_MSGBOX, "{FF0000}# {FFFFFF}Alerta", string, "Fechar", "");
+        return 1;
+    }
+    return 1;
+}
+
+//-----------------------------------------------------------------------------
+
+CreateTextdrawsLogon(telaid)
+{
+    switch(telaid)
+    {
+        case tela_base:
+        {
+            /*                      -----------   Textdraws - Tela de login/index   [ TEXTDRAWS BASE ]   -----------                */
+            // background da base 
+            logonIndex_base[0] = TextDrawCreate(580.000000, 62.000000, "_");
+            TextDrawBackgroundColor(logonIndex_base[0], 255);
+            TextDrawFont(logonIndex_base[0], 1);
+            TextDrawLetterSize(logonIndex_base[0], 0.500000, 35.499977);
+            TextDrawColor(logonIndex_base[0], -1);
+            TextDrawSetOutline(logonIndex_base[0], 0);
+            TextDrawSetProportional(logonIndex_base[0], 1);
+            TextDrawSetShadow(logonIndex_base[0], 1);
+            TextDrawUseBox(logonIndex_base[0], 1);
+            TextDrawBoxColor(logonIndex_base[0], -1077357825);
+            TextDrawTextSize(logonIndex_base[0], 60.000000, 0.000000);
+            TextDrawSetSelectable(logonIndex_base[0], 0);
+
+            logonIndex_base[1] = TextDrawCreate(577.000000, 60.000000, "_");
+            TextDrawBackgroundColor(logonIndex_base[1], 255);
+            TextDrawFont(logonIndex_base[1], 1);
+            TextDrawLetterSize(logonIndex_base[1], 0.500000, 36.000000);
+            TextDrawColor(logonIndex_base[1], -1);
+            TextDrawSetOutline(logonIndex_base[1], 0);
+            TextDrawSetProportional(logonIndex_base[1], 1);
+            TextDrawSetShadow(logonIndex_base[1], 1);
+            TextDrawUseBox(logonIndex_base[1], 1);
+            TextDrawBoxColor(logonIndex_base[1], -1077357825);
+            TextDrawTextSize(logonIndex_base[1], 63.000000, 0.000000);
+            TextDrawSetSelectable(logonIndex_base[1], 0);
+
+            logonIndex_base[2] = TextDrawCreate(61.000000, 56.299999, "LD_BEAT:chit");
+            TextDrawBackgroundColor(logonIndex_base[2], 255);
+            TextDrawFont(logonIndex_base[2], 4);
+            TextDrawLetterSize(logonIndex_base[2], 0.500000, 1.000000);
+            TextDrawColor(logonIndex_base[2], -1077357825);
+            TextDrawSetOutline(logonIndex_base[2], 0);
+            TextDrawSetProportional(logonIndex_base[2], 1);
+            TextDrawSetShadow(logonIndex_base[2], 1);
+            TextDrawUseBox(logonIndex_base[2], 1);
+            TextDrawBoxColor(logonIndex_base[2], 255);
+            TextDrawTextSize(logonIndex_base[2], 8.000000, 9.000000);
+            TextDrawSetSelectable(logonIndex_base[2], 0);
+
+            logonIndex_base[3] = TextDrawCreate(571.000000, 56.299999, "LD_BEAT:chit");
+            TextDrawBackgroundColor(logonIndex_base[3], 255);
+            TextDrawFont(logonIndex_base[3], 4);
+            TextDrawLetterSize(logonIndex_base[3], 0.500000, 1.000000);
+            TextDrawColor(logonIndex_base[3], -1077357825);
+            TextDrawSetOutline(logonIndex_base[3], 0);
+            TextDrawSetProportional(logonIndex_base[3], 1);
+            TextDrawSetShadow(logonIndex_base[3], 1);
+            TextDrawUseBox(logonIndex_base[3], 1);
+            TextDrawBoxColor(logonIndex_base[3], 255);
+            TextDrawTextSize(logonIndex_base[3], 8.000000, 9.000000);
+            TextDrawSetSelectable(logonIndex_base[3], 0);
+
+            logonIndex_base[4] = TextDrawCreate(61.000000, 378.000000, "LD_BEAT:chit");
+            TextDrawBackgroundColor(logonIndex_base[4], 255);
+            TextDrawFont(logonIndex_base[4], 4);
+            TextDrawLetterSize(logonIndex_base[4], 0.500000, 1.000000);
+            TextDrawColor(logonIndex_base[4], -1077357825);
+            TextDrawSetOutline(logonIndex_base[4], 0);
+            TextDrawSetProportional(logonIndex_base[4], 1);
+            TextDrawSetShadow(logonIndex_base[4], 1);
+            TextDrawUseBox(logonIndex_base[4], 1);
+            TextDrawBoxColor(logonIndex_base[4], 255);
+            TextDrawTextSize(logonIndex_base[4], 8.000000, 10.000000);
+            TextDrawSetSelectable(logonIndex_base[4], 0);
+
+            logonIndex_base[5] = TextDrawCreate(571.000000, 378.000000, "LD_BEAT:chit");
+            TextDrawBackgroundColor(logonIndex_base[5], 255);
+            TextDrawFont(logonIndex_base[5], 4);
+            TextDrawLetterSize(logonIndex_base[5], 0.500000, 1.000000);
+            TextDrawColor(logonIndex_base[5], -1077357825);
+            TextDrawSetOutline(logonIndex_base[5], 0);
+            TextDrawSetProportional(logonIndex_base[5], 1);
+            TextDrawSetShadow(logonIndex_base[5], 1);
+            TextDrawUseBox(logonIndex_base[5], 1);
+            TextDrawBoxColor(logonIndex_base[5], 255);
+            TextDrawTextSize(logonIndex_base[5], 8.000000, 10.000000);
+            TextDrawSetSelectable(logonIndex_base[5], 0);
+
+
+            // botão fechar/sair 
+            logonIndex_base[6] = TextDrawCreate(559.000000, 59.000000, "LD_BEAT:chit");
+            TextDrawBackgroundColor(logonIndex_base[6], 255);
+            TextDrawFont(logonIndex_base[6], 4);
+            TextDrawLetterSize(logonIndex_base[6], 0.500000, 1.000000);
+            TextDrawColor(logonIndex_base[6], 152);
+            TextDrawSetOutline(logonIndex_base[6], 0);
+            TextDrawSetProportional(logonIndex_base[6], 1);
+            TextDrawSetShadow(logonIndex_base[6], 1);
+            TextDrawUseBox(logonIndex_base[6], 1);
+            TextDrawBoxColor(logonIndex_base[6], 50);
+            TextDrawTextSize(logonIndex_base[6], 16.000000, 20.000000);
+            TextDrawSetSelectable(logonIndex_base[6], 0);
+
+            logonIndex_base[7] = TextDrawCreate(560.000000, 60.000000, "LD_BEAT:chit");
+            TextDrawBackgroundColor(logonIndex_base[7], 255);
+            TextDrawFont(logonIndex_base[7], 4);
+            TextDrawLetterSize(logonIndex_base[7], 0.500000, 1.000000);
+            TextDrawColor(logonIndex_base[7], -1);
+            TextDrawSetOutline(logonIndex_base[7], 0);
+            TextDrawSetProportional(logonIndex_base[7], 1);
+            TextDrawSetShadow(logonIndex_base[7], 1);
+            TextDrawUseBox(logonIndex_base[7], 1);
+            TextDrawBoxColor(logonIndex_base[7], 152);
+            TextDrawTextSize(logonIndex_base[7], 14.000000, 17.000000);
+            TextDrawSetSelectable(logonIndex_base[7], 0);
+
+            logonIndex_base[8] = TextDrawCreate(564.500000, 63.000000, "x");
+            TextDrawBackgroundColor(logonIndex_base[8], 255);
+            TextDrawFont(logonIndex_base[8], 2);
+            TextDrawLetterSize(logonIndex_base[8], 0.189999, 1.100000);
+            TextDrawColor(logonIndex_base[8], 693475071);
+            TextDrawSetOutline(logonIndex_base[8], 0);
+            TextDrawSetProportional(logonIndex_base[8], 1);
+            TextDrawSetShadow(logonIndex_base[8], 0);
+            TextDrawTextSize(logonIndex_base[8], 570.500000, 10.000000);
+            TextDrawSetSelectable(logonIndex_base[8], 1);
+
+            return 1;
+        }
+        case tela_inicio:
+        {
+            /*                      -----------   Textdraws - Local login      -----------                */
+            logonLogin[0] = TextDrawCreate(538.000000, 145.000000, "_");
+            TextDrawBackgroundColor(logonLogin[0], 255);
+            TextDrawFont(logonLogin[0], 1);
+            TextDrawLetterSize(logonLogin[0], 0.500000, 1.299998);
+            TextDrawColor(logonLogin[0], -1);
+            TextDrawSetOutline(logonLogin[0], 0);
+            TextDrawSetProportional(logonLogin[0], 1);
+            TextDrawSetShadow(logonLogin[0], 1);
+            TextDrawUseBox(logonLogin[0], 1);
+            TextDrawBoxColor(logonLogin[0], -303174145);
+            TextDrawTextSize(logonLogin[0], 399.000000, 1.000000);
+            TextDrawSetSelectable(logonLogin[0], 0);
+
+            logonLogin[1] = TextDrawCreate(537.000000, 144.000000, "_");
+            TextDrawBackgroundColor(logonLogin[1], 255);
+            TextDrawFont(logonLogin[1], 1);
+            TextDrawLetterSize(logonLogin[1], 0.500000, 1.499999);
+            TextDrawColor(logonLogin[1], -1);
+            TextDrawSetOutline(logonLogin[1], 0);
+            TextDrawSetProportional(logonLogin[1], 1);
+            TextDrawSetShadow(logonLogin[1], 1);
+            TextDrawUseBox(logonLogin[1], 1);
+            TextDrawBoxColor(logonLogin[1], -303174145);
+            TextDrawTextSize(logonLogin[1], 400.000000, 1.000000);
+            TextDrawSetSelectable(logonLogin[1], 0);
+
+            logonLogin[2] = TextDrawCreate(537.000000, 162.000000, "_");
+            TextDrawBackgroundColor(logonLogin[2], 255);
+            TextDrawFont(logonLogin[2], 1);
+            TextDrawLetterSize(logonLogin[2], 0.500000, -0.349999);
+            TextDrawColor(logonLogin[2], -1);
+            TextDrawSetOutline(logonLogin[2], 0);
+            TextDrawSetProportional(logonLogin[2], 1);
+            TextDrawSetShadow(logonLogin[2], 1);
+            TextDrawUseBox(logonLogin[2], 1);
+            TextDrawBoxColor(logonLogin[2], 20);
+            TextDrawTextSize(logonLogin[2], 400.000000, 1.000000);
+            TextDrawSetSelectable(logonLogin[2], 0);
+
+            logonLogin[3] = TextDrawCreate(400.000000, 131.000000, "Insira seu usuario");
+            TextDrawBackgroundColor(logonLogin[3], 255);
+            TextDrawFont(logonLogin[3], 2);
+            TextDrawLetterSize(logonLogin[3], 0.180000, 0.899999);
+            TextDrawColor(logonLogin[3], 1333509631);
+            TextDrawSetOutline(logonLogin[3], 0);
+            TextDrawSetProportional(logonLogin[3], 1);
+            TextDrawSetShadow(logonLogin[3], 0);
+            TextDrawSetSelectable(logonLogin[3], 0);
+
+            logonLogin[4] = TextDrawCreate(515.000000, 141.000000, "icone_Ajuda_USUARIO");
+            TextDrawBackgroundColor(logonLogin[4], 0);
+            TextDrawFont(logonLogin[4], 5);
+            TextDrawLetterSize(logonLogin[4], 0.500000, 1.000000);
+            TextDrawColor(logonLogin[4], -1);
+            TextDrawSetOutline(logonLogin[4], 0);
+            TextDrawSetProportional(logonLogin[4], 1);
+            TextDrawSetShadow(logonLogin[4], 1);
+            TextDrawUseBox(logonLogin[4], 1);
+            TextDrawBoxColor(logonLogin[4], 255);
+            TextDrawTextSize(logonLogin[4], 23.000000, 18.000000);
+            TextDrawSetPreviewModel(logonLogin[4], 1239);
+            TextDrawSetPreviewRot(logonLogin[4], 2.000000, 0.000000, 180.000000, 1.000000);
+            TextDrawSetSelectable(logonLogin[4], true);
+
+            logonLogin[5] = TextDrawCreate(538.000000, 185.000000, "_");
+            TextDrawBackgroundColor(logonLogin[5], 255);
+            TextDrawFont(logonLogin[5], 1);
+            TextDrawLetterSize(logonLogin[5], 0.500000, 1.299998);
+            TextDrawColor(logonLogin[5], -1);
+            TextDrawSetOutline(logonLogin[5], 0);
+            TextDrawSetProportional(logonLogin[5], 1);
+            TextDrawSetShadow(logonLogin[5], 1);
+            TextDrawUseBox(logonLogin[5], 1);
+            TextDrawBoxColor(logonLogin[5], -303174145);
+            TextDrawTextSize(logonLogin[5], 399.000000, 1.000000);
+            TextDrawSetSelectable(logonLogin[5], 0);
+
+            logonLogin[6] = TextDrawCreate(537.000000, 184.000000, "_");
+            TextDrawBackgroundColor(logonLogin[6], 255);
+            TextDrawFont(logonLogin[6], 1);
+            TextDrawLetterSize(logonLogin[6], 0.500000, 1.499999);
+            TextDrawColor(logonLogin[6], -1);
+            TextDrawSetOutline(logonLogin[6], 0);
+            TextDrawSetProportional(logonLogin[6], 1);
+            TextDrawSetShadow(logonLogin[6], 1);
+            TextDrawUseBox(logonLogin[6], 1);
+            TextDrawBoxColor(logonLogin[6], -303174145);
+            TextDrawTextSize(logonLogin[6], 400.000000, 1.000000);
+            TextDrawSetSelectable(logonLogin[6], 0);
+
+            logonLogin[7] = TextDrawCreate(537.000000, 202.199996, "_");
+            TextDrawBackgroundColor(logonLogin[7], 255);
+            TextDrawFont(logonLogin[7], 1);
+            TextDrawLetterSize(logonLogin[7], 0.500000, -0.300000);
+            TextDrawColor(logonLogin[7], -1);
+            TextDrawSetOutline(logonLogin[7], 0);
+            TextDrawSetProportional(logonLogin[7], 1);
+            TextDrawSetShadow(logonLogin[7], 1);
+            TextDrawUseBox(logonLogin[7], 1);
+            TextDrawBoxColor(logonLogin[7], 20);
+            TextDrawTextSize(logonLogin[7], 400.000000, 1.000000);
+            TextDrawSetSelectable(logonLogin[7], 0);
+
+            logonLogin[8] = TextDrawCreate(400.000000, 171.000000, "Coloque sua senha");
+            TextDrawBackgroundColor(logonLogin[8], 255);
+            TextDrawFont(logonLogin[8], 2);
+            TextDrawLetterSize(logonLogin[8], 0.180000, 0.899999);
+            TextDrawColor(logonLogin[8], 1333509631);
+            TextDrawSetOutline(logonLogin[8], 0);
+            TextDrawSetProportional(logonLogin[8], 1);
+            TextDrawSetShadow(logonLogin[8], 0);
+            TextDrawSetSelectable(logonLogin[8], 0);
+
+            logonLogin[9] = TextDrawCreate(434.000000, 212.000000, "LD_BEAT:chit");
+            TextDrawBackgroundColor(logonLogin[9], 255);
+            TextDrawFont(logonLogin[9], 4);
+            TextDrawLetterSize(logonLogin[9], 0.500000, 1.000000);
+            TextDrawColor(logonLogin[9], 50);
+            TextDrawSetOutline(logonLogin[9], 0);
+            TextDrawSetProportional(logonLogin[9], 1);
+            TextDrawSetShadow(logonLogin[9], 1);
+            TextDrawUseBox(logonLogin[9], 1);
+            TextDrawBoxColor(logonLogin[9], 20);
+            TextDrawTextSize(logonLogin[9], 20.000000, 20.000000);
+            TextDrawSetSelectable(logonLogin[9], 0);
+
+            logonLogin[10] = TextDrawCreate(431.000000, 203.600006, "LD_BEAT:chit");
+            TextDrawBackgroundColor(logonLogin[10], 255);
+            TextDrawFont(logonLogin[10], 4);
+            TextDrawLetterSize(logonLogin[10], 0.500000, 1.000000);
+            TextDrawColor(logonLogin[10], 1119897087);
+            TextDrawSetOutline(logonLogin[10], 0);
+            TextDrawSetProportional(logonLogin[10], 1);
+            TextDrawSetShadow(logonLogin[10], 1);
+            TextDrawUseBox(logonLogin[10], 1);
+            TextDrawBoxColor(logonLogin[10], 255);
+            TextDrawTextSize(logonLogin[10], 22.000000, 28.000000);
+            TextDrawSetSelectable(logonLogin[10], 0);
+
+            logonLogin[11] = TextDrawCreate(487.000000, 206.000000, "LD_BEAT:chit");
+            TextDrawBackgroundColor(logonLogin[11], 255);
+            TextDrawFont(logonLogin[11], 4);
+            TextDrawLetterSize(logonLogin[11], 0.500000, 1.000000);
+            TextDrawColor(logonLogin[11], 50);
+            TextDrawSetOutline(logonLogin[11], 0);
+            TextDrawSetProportional(logonLogin[11], 1);
+            TextDrawSetShadow(logonLogin[11], 1);
+            TextDrawUseBox(logonLogin[11], 1);
+            TextDrawBoxColor(logonLogin[11], 20);
+            TextDrawTextSize(logonLogin[11], 19.000000, 27.000000);
+            TextDrawSetSelectable(logonLogin[11], 0);
+
+            logonLogin[12] = TextDrawCreate(484.000000, 203.600006, "LD_BEAT:chit");
+            TextDrawBackgroundColor(logonLogin[12], 255);
+            TextDrawFont(logonLogin[12], 4);
+            TextDrawLetterSize(logonLogin[12], 0.500000, 1.000000);
+            TextDrawColor(logonLogin[12], 1119897087);
+            TextDrawSetOutline(logonLogin[12], 0);
+            TextDrawSetProportional(logonLogin[12], 1);
+            TextDrawSetShadow(logonLogin[12], 1);
+            TextDrawUseBox(logonLogin[12], 1);
+            TextDrawBoxColor(logonLogin[12], 255);
+            TextDrawTextSize(logonLogin[12], 22.000000, 28.000000);
+            TextDrawSetSelectable(logonLogin[12], 0);
+
+            logonLogin[13] = TextDrawCreate(496.000000, 210.500000, "_");
+            TextDrawBackgroundColor(logonLogin[13], 255);
+            TextDrawFont(logonLogin[13], 1);
+            TextDrawLetterSize(logonLogin[13], 0.500000, 1.600000);
+            TextDrawColor(logonLogin[13], -1);
+            TextDrawSetOutline(logonLogin[13], 0);
+            TextDrawSetProportional(logonLogin[13], 1);
+            TextDrawSetShadow(logonLogin[13], 1);
+            TextDrawUseBox(logonLogin[13], 1);
+            TextDrawBoxColor(logonLogin[13], 1119897087);
+            TextDrawTextSize(logonLogin[13], 440.000000, 0.000000);
+            TextDrawSetSelectable(logonLogin[13], 0);
+
+            logonLogin[14] = TextDrawCreate(498.000000, 229.500000, "_");
+            TextDrawBackgroundColor(logonLogin[14], 255);
+            TextDrawFont(logonLogin[14], 1);
+            TextDrawLetterSize(logonLogin[14], 0.500000, -0.379999);
+            TextDrawColor(logonLogin[14], -1);
+            TextDrawSetOutline(logonLogin[14], 0);
+            TextDrawSetProportional(logonLogin[14], 1);
+            TextDrawSetShadow(logonLogin[14], 1);
+            TextDrawUseBox(logonLogin[14], 1);
+            TextDrawBoxColor(logonLogin[14], 50);
+            TextDrawTextSize(logonLogin[14], 445.000000, 1.000000);
+            TextDrawSetSelectable(logonLogin[14], 0);
+
+            logonLogin[15] = TextDrawCreate(455.000000, 213.000000, "Entrar");
+            TextDrawBackgroundColor(logonLogin[15], 255);
+            TextDrawFont(logonLogin[15], 2);
+            TextDrawLetterSize(logonLogin[15], 0.180000, 0.899999);
+            TextDrawColor(logonLogin[15], -1);
+            TextDrawSetOutline(logonLogin[15], 0);
+            TextDrawSetProportional(logonLogin[15], 1);
+            TextDrawSetShadow(logonLogin[15], 0);
+            TextDrawTextSize(logonLogin[15], 475.000000, 13.000000);
+            TextDrawSetSelectable(logonLogin[15], 1);
+
+            logonLogin[16] = TextDrawCreate(428.000000, 238.000000, "Esqueci minha senha");
+            TextDrawBackgroundColor(logonLogin[16], 255);
+            TextDrawFont(logonLogin[16], 2);
+            TextDrawLetterSize(logonLogin[16], 0.180000, 0.899999);
+            TextDrawColor(logonLogin[16], 1333509631);
+            TextDrawSetOutline(logonLogin[16], 0);
+            TextDrawSetProportional(logonLogin[16], 1);
+            TextDrawSetShadow(logonLogin[16], 0);
+            TextDrawSetSelectable(logonLogin[16], 0);
+
+            logonLogin[17] = TextDrawCreate(444.000000, 247.000000, "Registrar-se");
+            TextDrawBackgroundColor(logonLogin[17], 255);
+            TextDrawFont(logonLogin[17], 2);
+            TextDrawLetterSize(logonLogin[17], 0.180000, 0.899999);
+            TextDrawColor(logonLogin[17], 1333509631);
+            TextDrawSetOutline(logonLogin[17], 0);
+            TextDrawSetProportional(logonLogin[17], 1);
+            TextDrawSetShadow(logonLogin[17], 0);
+            TextDrawTextSize(logonLogin[17], 495.000000, 7.000000);
+            TextDrawSetSelectable(logonLogin[17], 1);
+
+            // -----
+
+            CreateTextdrawsInfoServer(); // Cria as textdraws das informações do servidor.
+            return 1;
+        }
+        case tela_community:
+        {
+            //null
+            return 1;
+        }
+        case tela_credits:
+        {
+            //null
+            return 1;
+        }
+        case tela_register:
+        {
+            /*                      -----------   Textdraws - Local registro      -----------                */
+            /*logonRegister[0] = TextDrawCreate(670.000000, -10.000000, "_");
+            TextDrawBackgroundColor(logonRegister[0], 255);
+            TextDrawFont(logonRegister[0], 1);
+            TextDrawLetterSize(logonRegister[0], 0.500000, 54.000000);
+            TextDrawColor(logonRegister[0], -1);
+            TextDrawSetOutline(logonRegister[0], 0);
+            TextDrawSetProportional(logonRegister[0], 1);
+            TextDrawSetShadow(logonRegister[0], 1);
+            TextDrawUseBox(logonRegister[0], 1);
+            TextDrawBoxColor(logonRegister[0], 90);
+            TextDrawTextSize(logonRegister[0], -100.000000, 0.000000);
+            TextDrawSetSelectable(logonRegister[0], 0);*/
+
+            logonRegister[1] = TextDrawCreate(500.000000, 80.000000, "_");
+            TextDrawBackgroundColor(logonRegister[1], 255);
+            TextDrawFont(logonRegister[1], 1);
+            TextDrawLetterSize(logonRegister[1], 0.500000, 26.500001);
+            TextDrawColor(logonRegister[1], 962706943);
+            TextDrawSetOutline(logonRegister[1], 0);
+            TextDrawSetProportional(logonRegister[1], 1);
+            TextDrawSetShadow(logonRegister[1], 1);
+            TextDrawUseBox(logonRegister[1], 1);
+            TextDrawBoxColor(logonRegister[1], 239905023);
+            TextDrawTextSize(logonRegister[1], 319.000000, 0.000000);
+            TextDrawSetSelectable(logonRegister[1], 0);
+
+            logonRegister[2] = TextDrawCreate(498.000000, 78.000000, "_");
+            TextDrawBackgroundColor(logonRegister[2], 255);
+            TextDrawFont(logonRegister[2], 1);
+            TextDrawLetterSize(logonRegister[2], 0.500000, 27.000003);
+            TextDrawColor(logonRegister[2], -1);
+            TextDrawSetOutline(logonRegister[2], 0);
+            TextDrawSetProportional(logonRegister[2], 1);
+            TextDrawSetShadow(logonRegister[2], 1);
+            TextDrawUseBox(logonRegister[2], 1);
+            TextDrawBoxColor(logonRegister[2], 239905023);
+            TextDrawTextSize(logonRegister[2], 321.000000, 0.000000);
+            TextDrawSetSelectable(logonRegister[2], 0);
+
+            logonRegister[3] = TextDrawCreate(320.000000, 75.000000, "LD_BEAT:chit");
+            TextDrawBackgroundColor(logonRegister[3], 255);
+            TextDrawFont(logonRegister[3], 4);
+            TextDrawLetterSize(logonRegister[3], 0.500000, 1.000000);
+            TextDrawColor(logonRegister[3], 239905023);
+            TextDrawSetOutline(logonRegister[3], 0);
+            TextDrawSetProportional(logonRegister[3], 1);
+            TextDrawSetShadow(logonRegister[3], 1);
+            TextDrawUseBox(logonRegister[3], 1);
+            TextDrawBoxColor(logonRegister[3], 255);
+            TextDrawTextSize(logonRegister[3], 8.000000, 7.000000);
+            TextDrawSetSelectable(logonRegister[3], 0);
+
+            logonRegister[4] = TextDrawCreate(491.000000, 75.000000, "LD_BEAT:chit");
+            TextDrawBackgroundColor(logonRegister[4], 255);
+            TextDrawFont(logonRegister[4], 4);
+            TextDrawLetterSize(logonRegister[4], 0.500000, 1.000000);
+            TextDrawColor(logonRegister[4], 239905023);
+            TextDrawSetOutline(logonRegister[4], 0);
+            TextDrawSetProportional(logonRegister[4], 1);
+            TextDrawSetShadow(logonRegister[4], 1);
+            TextDrawUseBox(logonRegister[4], 1);
+            TextDrawBoxColor(logonRegister[4], 255);
+            TextDrawTextSize(logonRegister[4], 8.000000, 7.000000);
+            TextDrawSetSelectable(logonRegister[4], 0);
+
+            logonRegister[5] = TextDrawCreate(320.000000, 332.000000, "LD_BEAT:chit");
+            TextDrawBackgroundColor(logonRegister[5], 255);
+            TextDrawFont(logonRegister[5], 4);
+            TextDrawLetterSize(logonRegister[5], 0.500000, 1.000000);
+            TextDrawColor(logonRegister[5], -1077357825);
+            TextDrawSetOutline(logonRegister[5], 0);
+            TextDrawSetProportional(logonRegister[5], 1);
+            TextDrawSetShadow(logonRegister[5], 1);
+            TextDrawUseBox(logonRegister[5], 1);
+            TextDrawBoxColor(logonRegister[5], 255);
+            TextDrawTextSize(logonRegister[5], 8.000000, 7.000000);
+            TextDrawSetSelectable(logonRegister[5], 0);
+
+            logonRegister[6] = TextDrawCreate(491.000000, 332.000000, "LD_BEAT:chit");
+            TextDrawBackgroundColor(logonRegister[6], 255);
+            TextDrawFont(logonRegister[6], 4);
+            TextDrawLetterSize(logonRegister[6], 0.500000, 1.000000);
+            TextDrawColor(logonRegister[6], -1077357825);
+            TextDrawSetOutline(logonRegister[6], 0);
+            TextDrawSetProportional(logonRegister[6], 1);
+            TextDrawSetShadow(logonRegister[6], 1);
+            TextDrawUseBox(logonRegister[6], 1);
+            TextDrawBoxColor(logonRegister[6], 255);
+            TextDrawTextSize(logonRegister[6], 8.000000, 7.000000);
+            TextDrawSetSelectable(logonRegister[6], 0);
+
+            logonRegister[7] = TextDrawCreate(479.000000, 79.000000, "LD_BEAT:chit");
+            TextDrawBackgroundColor(logonRegister[7], 255);
+            TextDrawFont(logonRegister[7], 4);
+            TextDrawLetterSize(logonRegister[7], 0.500000, 1.000000);
+            TextDrawColor(logonRegister[7], 120);
+            TextDrawSetOutline(logonRegister[7], 0);
+            TextDrawSetProportional(logonRegister[7], 1);
+            TextDrawSetShadow(logonRegister[7], 1);
+            TextDrawUseBox(logonRegister[7], 1);
+            TextDrawBoxColor(logonRegister[7], 255);
+            TextDrawTextSize(logonRegister[7], 16.000000, 20.000000);
+            TextDrawSetSelectable(logonRegister[7], 0);
+
+            logonRegister[8] = TextDrawCreate(480.000000, 80.000000, "LD_BEAT:chit");
+            TextDrawBackgroundColor(logonRegister[8], 255);
+            TextDrawFont(logonRegister[8], 4);
+            TextDrawLetterSize(logonRegister[8], 0.500000, 1.000000);
+            TextDrawColor(logonRegister[8], -1);
+            TextDrawSetOutline(logonRegister[8], 0);
+            TextDrawSetProportional(logonRegister[8], 1);
+            TextDrawSetShadow(logonRegister[8], 1);
+            TextDrawUseBox(logonRegister[8], 1);
+            TextDrawBoxColor(logonRegister[8], 255);
+            TextDrawTextSize(logonRegister[8], 14.000000, 17.000000);
+            TextDrawSetSelectable(logonRegister[8], 0);
+
+            logonRegister[9] = TextDrawCreate(484.299987, 83.500000, "x");
+            TextDrawBackgroundColor(logonRegister[9], 255);
+            TextDrawFont(logonRegister[9], 2);
+            TextDrawLetterSize(logonRegister[9], 0.209999, 1.000000);
+            TextDrawColor(logonRegister[9], 357276927);
+            TextDrawSetOutline(logonRegister[9], 0);
+            TextDrawSetProportional(logonRegister[9], 1);
+            TextDrawSetShadow(logonRegister[9], 0);
+            TextDrawTextSize(logonRegister[9], 494.500000, 10.000000);
+            TextDrawSetSelectable(logonRegister[9], 1);
+
+            logonRegister[10] = TextDrawCreate(356.000000, 100.000000, "REGISTRE-SE!");
+            TextDrawBackgroundColor(logonRegister[10], 255);
+            TextDrawFont(logonRegister[10], 2);
+            TextDrawLetterSize(logonRegister[10], 0.409999, 2.799999);
+            TextDrawColor(logonRegister[10], -1);
+            TextDrawSetOutline(logonRegister[10], 0);
+            TextDrawSetProportional(logonRegister[10], 1);
+            TextDrawSetShadow(logonRegister[10], 0);
+            TextDrawSetSelectable(logonRegister[10], 0);
+
+            logonRegister[11] = TextDrawCreate(388.000000, 121.000000, "E gratuito e sempre sera...");
+            TextDrawBackgroundColor(logonRegister[11], 255);
+            TextDrawFont(logonRegister[11], 2);
+            TextDrawLetterSize(logonRegister[11], 0.129999, 0.899999);
+            TextDrawColor(logonRegister[11], -1);
+            TextDrawSetOutline(logonRegister[11], 0);
+            TextDrawSetProportional(logonRegister[11], 1);
+            TextDrawSetShadow(logonRegister[11], 0);
+            TextDrawSetSelectable(logonRegister[11], 0);
+
+            logonRegister[12] = TextDrawCreate(500.000000, 158.000000, "_");
+            TextDrawBackgroundColor(logonRegister[12], 255);
+            TextDrawFont(logonRegister[12], 1);
+            TextDrawLetterSize(logonRegister[12], 0.500000, 19.400001);
+            TextDrawColor(logonRegister[12], -1);
+            TextDrawSetOutline(logonRegister[12], 0);
+            TextDrawSetProportional(logonRegister[12], 1);
+            TextDrawSetShadow(logonRegister[12], 1);
+            TextDrawUseBox(logonRegister[12], 1);
+            TextDrawBoxColor(logonRegister[12], -1077357825);
+            TextDrawTextSize(logonRegister[12], 319.000000, 0.000000);
+            TextDrawSetSelectable(logonRegister[12], 0);
+
+            logonRegister[13] = TextDrawCreate(498.000000, 329.000000, "_");
+            TextDrawBackgroundColor(logonRegister[13], 255);
+            TextDrawFont(logonRegister[13], 1);
+            TextDrawLetterSize(logonRegister[13], 0.500000, 0.750000);
+            TextDrawColor(logonRegister[13], -1);
+            TextDrawSetOutline(logonRegister[13], 0);
+            TextDrawSetProportional(logonRegister[13], 1);
+            TextDrawSetShadow(logonRegister[13], 1);
+            TextDrawUseBox(logonRegister[13], 1);
+            TextDrawBoxColor(logonRegister[13], -1077357825);
+            TextDrawTextSize(logonRegister[13], 321.000000, 0.000000);
+            TextDrawSetSelectable(logonRegister[13], 0);
+
+            logonRegister[14] = TextDrawCreate(480.000000, 189.000000, "_");
+            TextDrawBackgroundColor(logonRegister[14], 255);
+            TextDrawFont(logonRegister[14], 1);
+            TextDrawLetterSize(logonRegister[14], 0.500000, 1.400002);
+            TextDrawColor(logonRegister[14], -1);
+            TextDrawSetOutline(logonRegister[14], 0);
+            TextDrawSetProportional(logonRegister[14], 1);
+            TextDrawSetShadow(logonRegister[14], 1);
+            TextDrawUseBox(logonRegister[14], 1);
+            TextDrawBoxColor(logonRegister[14], -303174145);
+            TextDrawTextSize(logonRegister[14], 339.000000, 0.000000);
+            TextDrawSetSelectable(logonRegister[14], 0);
+
+            logonRegister[15] = TextDrawCreate(479.000000, 188.000000, "_");
+            TextDrawBackgroundColor(logonRegister[15], 255);
+            TextDrawFont(logonRegister[15], 1);
+            TextDrawLetterSize(logonRegister[15], 0.500000, 1.600002);
+            TextDrawColor(logonRegister[15], -1);
+            TextDrawSetOutline(logonRegister[15], 0);
+            TextDrawSetProportional(logonRegister[15], 1);
+            TextDrawSetShadow(logonRegister[15], 1);
+            TextDrawUseBox(logonRegister[15], 1);
+            TextDrawBoxColor(logonRegister[15], -303174145);
+            TextDrawTextSize(logonRegister[15], 340.000000, 0.000000);
+            TextDrawSetSelectable(logonRegister[15], 0);
+
+            logonRegister[16] = TextDrawCreate(479.000000, 207.000000, "_");
+            TextDrawBackgroundColor(logonRegister[16], 255);
+            TextDrawFont(logonRegister[16], 1);
+            TextDrawLetterSize(logonRegister[16], 0.500000, -0.399996);
+            TextDrawColor(logonRegister[16], -1);
+            TextDrawSetOutline(logonRegister[16], 0);
+            TextDrawSetProportional(logonRegister[16], 1);
+            TextDrawSetShadow(logonRegister[16], 1);
+            TextDrawUseBox(logonRegister[16], 1);
+            TextDrawBoxColor(logonRegister[16], 50);
+            TextDrawTextSize(logonRegister[16], 340.000000, 0.000000);
+            TextDrawSetSelectable(logonRegister[16], 0);
+
+            logonRegister[17] = TextDrawCreate(341.000000, 174.000000, "INSIRA UM NICK VALIDO");
+            TextDrawBackgroundColor(logonRegister[17], 255);
+            TextDrawFont(logonRegister[17], 2);
+            TextDrawLetterSize(logonRegister[17], 0.170000, 1.000000);
+            TextDrawColor(logonRegister[17], 1299888127);
+            TextDrawSetOutline(logonRegister[17], 0);
+            TextDrawSetProportional(logonRegister[17], 1);
+            TextDrawSetShadow(logonRegister[17], 0);
+            TextDrawSetSelectable(logonRegister[17], 0);
+
+            logonRegister[18] = TextDrawCreate(453.000000, 186.000000, "icone_ajudaUSUARIO");
+            TextDrawBackgroundColor(logonRegister[18], 0);
+            TextDrawFont(logonRegister[18], 5);
+            TextDrawLetterSize(logonRegister[18], 0.500000, 1.000000);
+            TextDrawColor(logonRegister[18], -1);
+            TextDrawSetOutline(logonRegister[18], 0);
+            TextDrawSetProportional(logonRegister[18], 1);
+            TextDrawSetShadow(logonRegister[18], 1);
+            TextDrawUseBox(logonRegister[18], 1);
+            TextDrawBoxColor(logonRegister[18], 255);
+            TextDrawTextSize(logonRegister[18], 28.000000, 18.000000);
+            TextDrawSetPreviewModel(logonRegister[18], 1239);
+            TextDrawSetPreviewRot(logonRegister[18], -2.000000, 0.000000, -180.000000, 1.000000);
+            TextDrawSetSelectable(logonRegister[18], 1);
+
+            logonRegister[19] = TextDrawCreate(480.000000, 229.000000, "_");
+            TextDrawBackgroundColor(logonRegister[19], 255);
+            TextDrawFont(logonRegister[19], 1);
+            TextDrawLetterSize(logonRegister[19], 0.500000, 1.400002);
+            TextDrawColor(logonRegister[19], -1);
+            TextDrawSetOutline(logonRegister[19], 0);
+            TextDrawSetProportional(logonRegister[19], 1);
+            TextDrawSetShadow(logonRegister[19], 1);
+            TextDrawUseBox(logonRegister[19], 1);
+            TextDrawBoxColor(logonRegister[19], -303174145);
+            TextDrawTextSize(logonRegister[19], 339.000000, 0.000000);
+            TextDrawSetSelectable(logonRegister[19], 0);
+
+            logonRegister[20] = TextDrawCreate(479.000000, 228.000000, "_");
+            TextDrawBackgroundColor(logonRegister[20], 255);
+            TextDrawFont(logonRegister[20], 1);
+            TextDrawLetterSize(logonRegister[20], 0.500000, 1.600002);
+            TextDrawColor(logonRegister[20], -1);
+            TextDrawSetOutline(logonRegister[20], 0);
+            TextDrawSetProportional(logonRegister[20], 1);
+            TextDrawSetShadow(logonRegister[20], 1);
+            TextDrawUseBox(logonRegister[20], 1);
+            TextDrawBoxColor(logonRegister[20], -303174145);
+            TextDrawTextSize(logonRegister[20], 340.000000, 0.000000);
+            TextDrawSetSelectable(logonRegister[20], 0);
+
+            logonRegister[21] = TextDrawCreate(479.000000, 247.000000, "_");
+            TextDrawBackgroundColor(logonRegister[21], 255);
+            TextDrawFont(logonRegister[21], 1);
+            TextDrawLetterSize(logonRegister[21], 0.500000, -0.399996);
+            TextDrawColor(logonRegister[21], -1);
+            TextDrawSetOutline(logonRegister[21], 0);
+            TextDrawSetProportional(logonRegister[21], 1);
+            TextDrawSetShadow(logonRegister[21], 1);
+            TextDrawUseBox(logonRegister[21], 1);
+            TextDrawBoxColor(logonRegister[21], 50);
+            TextDrawTextSize(logonRegister[21], 340.000000, 0.000000);
+            TextDrawSetSelectable(logonRegister[21], 0);
+
+            logonRegister[22] = TextDrawCreate(341.000000, 214.000000, "COLOQUE UMA SENHA");
+            TextDrawBackgroundColor(logonRegister[22], 255);
+            TextDrawFont(logonRegister[22], 2);
+            TextDrawLetterSize(logonRegister[22], 0.170000, 1.000000);
+            TextDrawColor(logonRegister[22], 1299888127);
+            TextDrawSetOutline(logonRegister[22], 0);
+            TextDrawSetProportional(logonRegister[22], 1);
+            TextDrawSetShadow(logonRegister[22], 0);
+            TextDrawSetSelectable(logonRegister[22], 0);
+
+            logonRegister[23] = TextDrawCreate(480.000000, 269.000000, "_");
+            TextDrawBackgroundColor(logonRegister[23], 255);
+            TextDrawFont(logonRegister[23], 1);
+            TextDrawLetterSize(logonRegister[23], 0.500000, 1.400002);
+            TextDrawColor(logonRegister[23], -1);
+            TextDrawSetOutline(logonRegister[23], 0);
+            TextDrawSetProportional(logonRegister[23], 1);
+            TextDrawSetShadow(logonRegister[23], 1);
+            TextDrawUseBox(logonRegister[23], 1);
+            TextDrawBoxColor(logonRegister[23], -303174145);
+            TextDrawTextSize(logonRegister[23], 339.000000, 0.000000);
+            TextDrawSetSelectable(logonRegister[23], 0);
+
+            logonRegister[24] = TextDrawCreate(479.000000, 268.000000, "_");
+            TextDrawBackgroundColor(logonRegister[24], 255);
+            TextDrawFont(logonRegister[24], 1);
+            TextDrawLetterSize(logonRegister[24], 0.500000, 1.600002);
+            TextDrawColor(logonRegister[24], -1);
+            TextDrawSetOutline(logonRegister[24], 0);
+            TextDrawSetProportional(logonRegister[24], 1);
+            TextDrawSetShadow(logonRegister[24], 1);
+            TextDrawUseBox(logonRegister[24], 1);
+            TextDrawBoxColor(logonRegister[24], -303174145);
+            TextDrawTextSize(logonRegister[24], 340.000000, 0.000000);
+            TextDrawSetSelectable(logonRegister[24], 0);
+
+            logonRegister[25] = TextDrawCreate(479.000000, 287.000000, "_");
+            TextDrawBackgroundColor(logonRegister[25], 255);
+            TextDrawFont(logonRegister[25], 1);
+            TextDrawLetterSize(logonRegister[25], 0.500000, -0.399996);
+            TextDrawColor(logonRegister[25], -1);
+            TextDrawSetOutline(logonRegister[25], 0);
+            TextDrawSetProportional(logonRegister[25], 1);
+            TextDrawSetShadow(logonRegister[25], 1);
+            TextDrawUseBox(logonRegister[25], 1);
+            TextDrawBoxColor(logonRegister[25], 50);
+            TextDrawTextSize(logonRegister[25], 340.000000, 0.000000);
+            TextDrawSetSelectable(logonRegister[25], 0);
+
+            logonRegister[26] = TextDrawCreate(341.000000, 254.000000, "Insira seu e-mail");
+            TextDrawBackgroundColor(logonRegister[26], 255);
+            TextDrawFont(logonRegister[26], 2);
+            TextDrawLetterSize(logonRegister[26], 0.170000, 1.000000);
+            TextDrawColor(logonRegister[26], 1299888127);
+            TextDrawSetOutline(logonRegister[26], 0);
+            TextDrawSetProportional(logonRegister[26], 1);
+            TextDrawSetShadow(logonRegister[26], 0);
+            TextDrawSetSelectable(logonRegister[26], 0);
+
+            logonRegister[27] = TextDrawCreate(453.000000, 266.000000, "icone_ajudaMAIL");
+            TextDrawBackgroundColor(logonRegister[27], 0);
+            TextDrawFont(logonRegister[27], 5);
+            TextDrawLetterSize(logonRegister[27], 0.500000, 1.000000);
+            TextDrawColor(logonRegister[27], -1);
+            TextDrawSetOutline(logonRegister[27], 0);
+            TextDrawSetProportional(logonRegister[27], 1);
+            TextDrawSetShadow(logonRegister[27], 1);
+            TextDrawUseBox(logonRegister[27], 1);
+            TextDrawBoxColor(logonRegister[27], 255);
+            TextDrawTextSize(logonRegister[27], 28.000000, 18.000000);
+            TextDrawSetPreviewModel(logonRegister[27], 1239);
+            TextDrawSetPreviewRot(logonRegister[27], -2.000000, 0.000000, -180.000000, 1.000000);
+            TextDrawSetSelectable(logonRegister[27], 1);
+
+            logonRegister[28] = TextDrawCreate(374.000000, 289.500000, "LD_BEAT:chit");
+            TextDrawBackgroundColor(logonRegister[28], 255);
+            TextDrawFont(logonRegister[28], 4);
+            TextDrawLetterSize(logonRegister[28], 0.500000, 1.000000);
+            TextDrawColor(logonRegister[28], 50);
+            TextDrawSetOutline(logonRegister[28], 0);
+            TextDrawSetProportional(logonRegister[28], 1);
+            TextDrawSetShadow(logonRegister[28], 1);
+            TextDrawUseBox(logonRegister[28], 1);
+            TextDrawBoxColor(logonRegister[28], 255);
+            TextDrawTextSize(logonRegister[28], 24.000000, 27.000000);
+            TextDrawSetSelectable(logonRegister[28], 0);
+
+            logonRegister[29] = TextDrawCreate(373.000000, 288.000000, "LD_BEAT:chit");
+            TextDrawBackgroundColor(logonRegister[29], 255);
+            TextDrawFont(logonRegister[29], 4);
+            TextDrawLetterSize(logonRegister[29], 0.500000, 1.000000);
+            TextDrawColor(logonRegister[29], 239905023);
+            TextDrawSetOutline(logonRegister[29], 0);
+            TextDrawSetProportional(logonRegister[29], 1);
+            TextDrawSetShadow(logonRegister[29], 1);
+            TextDrawUseBox(logonRegister[29], 1);
+            TextDrawBoxColor(logonRegister[29], 255);
+            TextDrawTextSize(logonRegister[29], 24.000000, 27.000000);
+            TextDrawSetSelectable(logonRegister[29], 0);
+
+            logonRegister[30] = TextDrawCreate(424.000000, 288.500000, "LD_BEAT:chit");
+            TextDrawBackgroundColor(logonRegister[30], 255);
+            TextDrawFont(logonRegister[30], 4);
+            TextDrawLetterSize(logonRegister[30], 0.500000, 1.000000);
+            TextDrawColor(logonRegister[30], 50);
+            TextDrawSetOutline(logonRegister[30], 0);
+            TextDrawSetProportional(logonRegister[30], 1);
+            TextDrawSetShadow(logonRegister[30], 1);
+            TextDrawUseBox(logonRegister[30], 1);
+            TextDrawBoxColor(logonRegister[30], 255);
+            TextDrawTextSize(logonRegister[30], 25.000000, 28.000000);
+            TextDrawSetSelectable(logonRegister[30], 0);
+
+            logonRegister[31] = TextDrawCreate(424.000000, 288.000000, "LD_BEAT:chit");
+            TextDrawBackgroundColor(logonRegister[31], 255);
+            TextDrawFont(logonRegister[31], 4);
+            TextDrawLetterSize(logonRegister[31], 0.500000, 1.000000);
+            TextDrawColor(logonRegister[31], 239905023);
+            TextDrawSetOutline(logonRegister[31], 0);
+            TextDrawSetProportional(logonRegister[31], 1);
+            TextDrawSetShadow(logonRegister[31], 1);
+            TextDrawUseBox(logonRegister[31], 1);
+            TextDrawBoxColor(logonRegister[31], 255);
+            TextDrawTextSize(logonRegister[31], 24.000000, 27.000000);
+            TextDrawSetSelectable(logonRegister[31], 0);
+
+            logonRegister[32] = TextDrawCreate(439.000000, 294.600006, "_");
+            TextDrawBackgroundColor(logonRegister[32], 255);
+            TextDrawFont(logonRegister[32], 1);
+            TextDrawLetterSize(logonRegister[32], 0.000000, 1.500002);
+            TextDrawColor(logonRegister[32], -1);
+            TextDrawSetOutline(logonRegister[32], 0);
+            TextDrawSetProportional(logonRegister[32], 1);
+            TextDrawSetShadow(logonRegister[32], 1);
+            TextDrawUseBox(logonRegister[32], 1);
+            TextDrawBoxColor(logonRegister[32], 239905023);
+            TextDrawTextSize(logonRegister[32], 382.000000, 0.000000);
+            TextDrawSetSelectable(logonRegister[32], 0);
+
+            logonRegister[33] = TextDrawCreate(436.000000, 313.000000, "_");
+            TextDrawBackgroundColor(logonRegister[33], 255);
+            TextDrawFont(logonRegister[33], 1);
+            TextDrawLetterSize(logonRegister[33], 0.500000, -0.399996);
+            TextDrawColor(logonRegister[33], -1);
+            TextDrawSetOutline(logonRegister[33], 0);
+            TextDrawSetProportional(logonRegister[33], 1);
+            TextDrawSetShadow(logonRegister[33], 1);
+            TextDrawUseBox(logonRegister[33], 1);
+            TextDrawBoxColor(logonRegister[33], 50);
+            TextDrawTextSize(logonRegister[33], 386.000000, 0.000000);
+            TextDrawSetSelectable(logonRegister[33], 0);
+
+            logonRegister[34] = TextDrawCreate(411.000000, 297.000000, "Proximo");
+            TextDrawAlignment(logonRegister[34], 2);
+            TextDrawBackgroundColor(logonRegister[34], 255);
+            TextDrawFont(logonRegister[34], 2);
+            TextDrawLetterSize(logonRegister[34], 0.170000, 1.000000);
+            TextDrawColor(logonRegister[34], -1);
+            TextDrawSetOutline(logonRegister[34], 0);
+            TextDrawSetProportional(logonRegister[34], 1);
+            TextDrawSetShadow(logonRegister[34], 0);
+            TextDrawTextSize(logonRegister[34], 441.000000, 13.000000);
+            TextDrawSetSelectable(logonRegister[34], 1);
+        }
+    }
+    return 1;
+}
+
+CreatePlayerTextdrawsLogon(playerid, telaid)
+{
+    switch(telaid)
+    {
+        case tela_base:
+        {
+            /*                  -----------   Player Textdraws - Tela de login/index   [ TEXTDRAWS BASE ]   -----------                */
+            // barrinha (faixa) no topo.
+            logonIndex_basePlayer[playerid][0] = CreatePlayerTextDraw(playerid,580.000000, 82.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonIndex_basePlayer[playerid][0], 255);
+            PlayerTextDrawFont(playerid,logonIndex_basePlayer[playerid][0], 1);
+            PlayerTextDrawLetterSize(playerid,logonIndex_basePlayer[playerid][0], 0.500000, 2.399998);
+            PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][0], -1);
+            PlayerTextDrawSetOutline(playerid,logonIndex_basePlayer[playerid][0], 0);
+            PlayerTextDrawSetProportional(playerid,logonIndex_basePlayer[playerid][0], 1);
+            PlayerTextDrawSetShadow(playerid,logonIndex_basePlayer[playerid][0], 1);
+            PlayerTextDrawUseBox(playerid,logonIndex_basePlayer[playerid][0], 1);
+            PlayerTextDrawBoxColor(playerid,logonIndex_basePlayer[playerid][0], 1119897087);
+            PlayerTextDrawTextSize(playerid,logonIndex_basePlayer[playerid][0], 60.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonIndex_basePlayer[playerid][0], 0);
+
+            logonIndex_basePlayer[playerid][1] = CreatePlayerTextDraw(playerid,66.000000, 83.000000, "casaiconHOME");
+            PlayerTextDrawBackgroundColor(playerid,logonIndex_basePlayer[playerid][1], 0);
+            PlayerTextDrawFont(playerid,logonIndex_basePlayer[playerid][1], 5);
+            PlayerTextDrawLetterSize(playerid,logonIndex_basePlayer[playerid][1], 0.500000, 1.000000);
+            PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][1], -1);
+            PlayerTextDrawSetOutline(playerid,logonIndex_basePlayer[playerid][1], 0);
+            PlayerTextDrawSetProportional(playerid,logonIndex_basePlayer[playerid][1], 1);
+            PlayerTextDrawSetShadow(playerid,logonIndex_basePlayer[playerid][1], 1);
+            PlayerTextDrawUseBox(playerid,logonIndex_basePlayer[playerid][1], 1);
+            PlayerTextDrawBoxColor(playerid,logonIndex_basePlayer[playerid][1], 255);
+            PlayerTextDrawTextSize(playerid,logonIndex_basePlayer[playerid][1], 24.000000, 22.000000);
+            PlayerTextDrawSetPreviewModel(playerid, logonIndex_basePlayer[playerid][1], 1273);
+            PlayerTextDrawSetPreviewRot(playerid, logonIndex_basePlayer[playerid][1], 3.000000, 0.000000, 0.000000, 1.000000);
+            PlayerTextDrawSetSelectable(playerid,logonIndex_basePlayer[playerid][1], 0);
+
+            logonIndex_basePlayer[playerid][2] = CreatePlayerTextDraw(playerid,91.000000, 84.000000, "Inicio");
+            PlayerTextDrawBackgroundColor(playerid,logonIndex_basePlayer[playerid][2], 255);
+            PlayerTextDrawFont(playerid,logonIndex_basePlayer[playerid][2], 2);
+            PlayerTextDrawLetterSize(playerid,logonIndex_basePlayer[playerid][2], 0.269998, 1.699998);
+            PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][2], -1);
+            PlayerTextDrawSetOutline(playerid,logonIndex_basePlayer[playerid][2], 0);
+            PlayerTextDrawSetProportional(playerid,logonIndex_basePlayer[playerid][2], 1);
+            PlayerTextDrawSetShadow(playerid,logonIndex_basePlayer[playerid][2], 0);
+            PlayerTextDrawSetSelectable(playerid,logonIndex_basePlayer[playerid][2], 0);
+
+
+            // botões background
+            // botão do meio
+            logonIndex_basePlayer[playerid][3] = CreatePlayerTextDraw(playerid,350.000000, 64.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonIndex_basePlayer[playerid][3], 255);
+            PlayerTextDrawFont(playerid,logonIndex_basePlayer[playerid][3], 1);
+            PlayerTextDrawLetterSize(playerid,logonIndex_basePlayer[playerid][3], 0.500000, 1.499999);
+            PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][3], -1);
+            PlayerTextDrawSetOutline(playerid,logonIndex_basePlayer[playerid][3], 0);
+            PlayerTextDrawSetProportional(playerid,logonIndex_basePlayer[playerid][3], 1);
+            PlayerTextDrawSetShadow(playerid,logonIndex_basePlayer[playerid][3], 1);
+            PlayerTextDrawUseBox(playerid,logonIndex_basePlayer[playerid][3], 1);
+            PlayerTextDrawBoxColor(playerid,logonIndex_basePlayer[playerid][3], -269488129);
+            PlayerTextDrawTextSize(playerid,logonIndex_basePlayer[playerid][3], 290.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonIndex_basePlayer[playerid][3], 0);
+
+            logonIndex_basePlayer[playerid][4] = CreatePlayerTextDraw(playerid,349.000000, 63.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonIndex_basePlayer[playerid][4], 255);
+            PlayerTextDrawFont(playerid,logonIndex_basePlayer[playerid][4], 1);
+            PlayerTextDrawLetterSize(playerid,logonIndex_basePlayer[playerid][4], 0.500000, 1.499999);
+            PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][4], -1);
+            PlayerTextDrawSetOutline(playerid,logonIndex_basePlayer[playerid][4], 0);
+            PlayerTextDrawSetProportional(playerid,logonIndex_basePlayer[playerid][4], 1);
+            PlayerTextDrawSetShadow(playerid,logonIndex_basePlayer[playerid][4], 1);
+            PlayerTextDrawUseBox(playerid,logonIndex_basePlayer[playerid][4], 1);
+            PlayerTextDrawBoxColor(playerid,logonIndex_basePlayer[playerid][4], -269488129);
+            PlayerTextDrawTextSize(playerid,logonIndex_basePlayer[playerid][4], 291.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonIndex_basePlayer[playerid][4], 0);
+
+            logonIndex_basePlayer[playerid][5] = CreatePlayerTextDraw(playerid,291.500000, 60.000000, "LD_BEAT:chit");
+            PlayerTextDrawBackgroundColor(playerid,logonIndex_basePlayer[playerid][5], 255);
+            PlayerTextDrawFont(playerid,logonIndex_basePlayer[playerid][5], 4);
+            PlayerTextDrawLetterSize(playerid,logonIndex_basePlayer[playerid][5], 0.500000, 1.000000);
+            PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][5], -269488129);
+            PlayerTextDrawSetOutline(playerid,logonIndex_basePlayer[playerid][5], 0);
+            PlayerTextDrawSetProportional(playerid,logonIndex_basePlayer[playerid][5], 1);
+            PlayerTextDrawSetShadow(playerid,logonIndex_basePlayer[playerid][5], 1);
+            PlayerTextDrawUseBox(playerid,logonIndex_basePlayer[playerid][5], 1);
+            PlayerTextDrawBoxColor(playerid,logonIndex_basePlayer[playerid][5], 255);
+            PlayerTextDrawTextSize(playerid,logonIndex_basePlayer[playerid][5], 2.000000, 3.000000);
+            PlayerTextDrawSetSelectable(playerid,logonIndex_basePlayer[playerid][5], 0);
+
+            logonIndex_basePlayer[playerid][6] = CreatePlayerTextDraw(playerid,346.500000, 60.000000, "LD_BEAT:chit");
+            PlayerTextDrawBackgroundColor(playerid,logonIndex_basePlayer[playerid][6], 255);
+            PlayerTextDrawFont(playerid,logonIndex_basePlayer[playerid][6], 4);
+            PlayerTextDrawLetterSize(playerid,logonIndex_basePlayer[playerid][6], 0.500000, 1.000000);
+            PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][6], -269488129);
+            PlayerTextDrawSetOutline(playerid,logonIndex_basePlayer[playerid][6], 0);
+            PlayerTextDrawSetProportional(playerid,logonIndex_basePlayer[playerid][6], 1);
+            PlayerTextDrawSetShadow(playerid,logonIndex_basePlayer[playerid][6], 1);
+            PlayerTextDrawUseBox(playerid,logonIndex_basePlayer[playerid][6], 1);
+            PlayerTextDrawBoxColor(playerid,logonIndex_basePlayer[playerid][6], 255);
+            PlayerTextDrawTextSize(playerid,logonIndex_basePlayer[playerid][6], 2.000000, 3.000000);
+            PlayerTextDrawSetSelectable(playerid,logonIndex_basePlayer[playerid][6], 0);
+
+
+
+            // botão esquerda
+            logonIndex_basePlayer[playerid][7] = CreatePlayerTextDraw(playerid,238.000000, 64.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonIndex_basePlayer[playerid][7], 255);
+            PlayerTextDrawFont(playerid,logonIndex_basePlayer[playerid][7], 1);
+            PlayerTextDrawLetterSize(playerid,logonIndex_basePlayer[playerid][7], 0.500000, 1.499999);
+            PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][7], -1);
+            PlayerTextDrawSetOutline(playerid,logonIndex_basePlayer[playerid][7], 0);
+            PlayerTextDrawSetProportional(playerid,logonIndex_basePlayer[playerid][7], 1);
+            PlayerTextDrawSetShadow(playerid,logonIndex_basePlayer[playerid][7], 1);
+            PlayerTextDrawUseBox(playerid,logonIndex_basePlayer[playerid][7], 1);
+            PlayerTextDrawBoxColor(playerid,logonIndex_basePlayer[playerid][7], 1119897087);
+            PlayerTextDrawTextSize(playerid,logonIndex_basePlayer[playerid][7], 289.000000, 1.000000);
+            PlayerTextDrawSetSelectable(playerid,logonIndex_basePlayer[playerid][7], 0);
+
+            logonIndex_basePlayer[playerid][8] = CreatePlayerTextDraw(playerid,239.000000, 63.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonIndex_basePlayer[playerid][8], 255);
+            PlayerTextDrawFont(playerid,logonIndex_basePlayer[playerid][8], 1);
+            PlayerTextDrawLetterSize(playerid,logonIndex_basePlayer[playerid][8], 0.500000, 1.499999);
+            PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][8], -1);
+            PlayerTextDrawSetOutline(playerid,logonIndex_basePlayer[playerid][8], 0);
+            PlayerTextDrawSetProportional(playerid,logonIndex_basePlayer[playerid][8], 1);
+            PlayerTextDrawSetShadow(playerid,logonIndex_basePlayer[playerid][8], 1);
+            PlayerTextDrawUseBox(playerid,logonIndex_basePlayer[playerid][8], 1);
+            PlayerTextDrawBoxColor(playerid,logonIndex_basePlayer[playerid][8], 1119897087);
+            PlayerTextDrawTextSize(playerid,logonIndex_basePlayer[playerid][8], 288.000000, 1.000000);
+            PlayerTextDrawSetSelectable(playerid,logonIndex_basePlayer[playerid][8], 0);
+
+            logonIndex_basePlayer[playerid][9] = CreatePlayerTextDraw(playerid,235.699996, 60.000000, "LD_BEAT:chit");
+            PlayerTextDrawBackgroundColor(playerid,logonIndex_basePlayer[playerid][9], 255);
+            PlayerTextDrawFont(playerid,logonIndex_basePlayer[playerid][9], 4);
+            PlayerTextDrawLetterSize(playerid,logonIndex_basePlayer[playerid][9], 0.500000, 1.000000);
+            PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][9], 1119897087);
+            PlayerTextDrawSetOutline(playerid,logonIndex_basePlayer[playerid][9], 0);
+            PlayerTextDrawSetProportional(playerid,logonIndex_basePlayer[playerid][9], 1);
+            PlayerTextDrawSetShadow(playerid,logonIndex_basePlayer[playerid][9], 1);
+            PlayerTextDrawUseBox(playerid,logonIndex_basePlayer[playerid][9], 1);
+            PlayerTextDrawBoxColor(playerid,logonIndex_basePlayer[playerid][9], 255);
+            PlayerTextDrawTextSize(playerid,logonIndex_basePlayer[playerid][9], 2.000000, 3.000000);
+            PlayerTextDrawSetSelectable(playerid,logonIndex_basePlayer[playerid][9], 0);
+
+            logonIndex_basePlayer[playerid][10] = CreatePlayerTextDraw(playerid,288.600006, 60.000000, "LD_BEAT:chit");
+            PlayerTextDrawBackgroundColor(playerid,logonIndex_basePlayer[playerid][10], 255);
+            PlayerTextDrawFont(playerid,logonIndex_basePlayer[playerid][10], 4);
+            PlayerTextDrawLetterSize(playerid,logonIndex_basePlayer[playerid][10], 0.500000, 1.000000);
+            PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][10], 1119897087);
+            PlayerTextDrawSetOutline(playerid,logonIndex_basePlayer[playerid][10], 0);
+            PlayerTextDrawSetProportional(playerid,logonIndex_basePlayer[playerid][10], 1);
+            PlayerTextDrawSetShadow(playerid,logonIndex_basePlayer[playerid][10], 1);
+            PlayerTextDrawUseBox(playerid,logonIndex_basePlayer[playerid][10], 1);
+            PlayerTextDrawBoxColor(playerid,logonIndex_basePlayer[playerid][10], 255);
+            PlayerTextDrawTextSize(playerid,logonIndex_basePlayer[playerid][10], 2.000000, 3.000000);
+            PlayerTextDrawSetSelectable(playerid,logonIndex_basePlayer[playerid][10], 0);
+
+
+            // botão direita
+            logonIndex_basePlayer[playerid][11] = CreatePlayerTextDraw(playerid,410.000000, 64.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonIndex_basePlayer[playerid][11], 255);
+            PlayerTextDrawFont(playerid,logonIndex_basePlayer[playerid][11], 1);
+            PlayerTextDrawLetterSize(playerid,logonIndex_basePlayer[playerid][11], 0.500000, 1.499999);
+            PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][11], -1);
+            PlayerTextDrawSetOutline(playerid,logonIndex_basePlayer[playerid][11], 0);
+            PlayerTextDrawSetProportional(playerid,logonIndex_basePlayer[playerid][11], 1);
+            PlayerTextDrawSetShadow(playerid,logonIndex_basePlayer[playerid][11], 1);
+            PlayerTextDrawUseBox(playerid,logonIndex_basePlayer[playerid][11], 1);
+            PlayerTextDrawBoxColor(playerid,logonIndex_basePlayer[playerid][11], -269488129);
+            PlayerTextDrawTextSize(playerid,logonIndex_basePlayer[playerid][11], 347.299987, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonIndex_basePlayer[playerid][11], 0);
+
+            logonIndex_basePlayer[playerid][12] = CreatePlayerTextDraw(playerid,409.000000, 63.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonIndex_basePlayer[playerid][12], 255);
+            PlayerTextDrawFont(playerid,logonIndex_basePlayer[playerid][12], 1);
+            PlayerTextDrawLetterSize(playerid,logonIndex_basePlayer[playerid][12], 0.500000, 1.499999);
+            PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][12], -1);
+            PlayerTextDrawSetOutline(playerid,logonIndex_basePlayer[playerid][12], 0);
+            PlayerTextDrawSetProportional(playerid,logonIndex_basePlayer[playerid][12], 1);
+            PlayerTextDrawSetShadow(playerid,logonIndex_basePlayer[playerid][12], 1);
+            PlayerTextDrawUseBox(playerid,logonIndex_basePlayer[playerid][12], 1);
+            PlayerTextDrawBoxColor(playerid,logonIndex_basePlayer[playerid][12], -269488129);
+            PlayerTextDrawTextSize(playerid,logonIndex_basePlayer[playerid][12], 348.299987, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonIndex_basePlayer[playerid][12], 0);
+
+            logonIndex_basePlayer[playerid][13] = CreatePlayerTextDraw(playerid,349.500000, 60.000000, "LD_BEAT:chit");
+            PlayerTextDrawBackgroundColor(playerid,logonIndex_basePlayer[playerid][13], 255);
+            PlayerTextDrawFont(playerid,logonIndex_basePlayer[playerid][13], 4);
+            PlayerTextDrawLetterSize(playerid,logonIndex_basePlayer[playerid][13], 0.500000, 1.000000);
+            PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][13], -269488129);
+            PlayerTextDrawSetOutline(playerid,logonIndex_basePlayer[playerid][13], 0);
+            PlayerTextDrawSetProportional(playerid,logonIndex_basePlayer[playerid][13], 1);
+            PlayerTextDrawSetShadow(playerid,logonIndex_basePlayer[playerid][13], 1);
+            PlayerTextDrawUseBox(playerid,logonIndex_basePlayer[playerid][13], 1);
+            PlayerTextDrawBoxColor(playerid,logonIndex_basePlayer[playerid][13], 255);
+            PlayerTextDrawTextSize(playerid,logonIndex_basePlayer[playerid][13], 2.000000, 3.000000);
+            PlayerTextDrawSetSelectable(playerid,logonIndex_basePlayer[playerid][13], 0);
+
+            logonIndex_basePlayer[playerid][14] = CreatePlayerTextDraw(playerid,406.500000, 60.000000, "LD_BEAT:chit");
+            PlayerTextDrawBackgroundColor(playerid,logonIndex_basePlayer[playerid][14], 255);
+            PlayerTextDrawFont(playerid,logonIndex_basePlayer[playerid][14], 4);
+            PlayerTextDrawLetterSize(playerid,logonIndex_basePlayer[playerid][14], 0.500000, 1.000000);
+            PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][14], -269488129);
+            PlayerTextDrawSetOutline(playerid,logonIndex_basePlayer[playerid][14], 0);
+            PlayerTextDrawSetProportional(playerid,logonIndex_basePlayer[playerid][14], 1);
+            PlayerTextDrawSetShadow(playerid,logonIndex_basePlayer[playerid][14], 1);
+            PlayerTextDrawUseBox(playerid,logonIndex_basePlayer[playerid][14], 1);
+            PlayerTextDrawBoxColor(playerid,logonIndex_basePlayer[playerid][14], 255);
+            PlayerTextDrawTextSize(playerid,logonIndex_basePlayer[playerid][14], 2.000000, 3.000000);
+            PlayerTextDrawSetSelectable(playerid,logonIndex_basePlayer[playerid][14], 0);
+
+
+            // texto dos botõs.
+            logonIndex_basePlayer[playerid][15] = CreatePlayerTextDraw(playerid,253.000000, 66.000000, "inicio");
+            PlayerTextDrawBackgroundColor(playerid,logonIndex_basePlayer[playerid][15], 255);
+            PlayerTextDrawFont(playerid,logonIndex_basePlayer[playerid][15], 2);
+            PlayerTextDrawLetterSize(playerid,logonIndex_basePlayer[playerid][15], 0.180000, 0.899999);
+            PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][15], -1);
+            PlayerTextDrawSetOutline(playerid,logonIndex_basePlayer[playerid][15], 0);
+            PlayerTextDrawSetProportional(playerid,logonIndex_basePlayer[playerid][15], 1);
+            PlayerTextDrawSetShadow(playerid,logonIndex_basePlayer[playerid][15], 0);
+            PlayerTextDrawTextSize(playerid,logonIndex_basePlayer[playerid][15], 273.000000, 10.000000);
+            PlayerTextDrawSetSelectable(playerid,logonIndex_basePlayer[playerid][15], 1);
+
+            logonIndex_basePlayer[playerid][16] = CreatePlayerTextDraw(playerid,297.000000, 66.000000, "Comunidade");
+            PlayerTextDrawBackgroundColor(playerid,logonIndex_basePlayer[playerid][16], 255);
+            PlayerTextDrawFont(playerid,logonIndex_basePlayer[playerid][16], 2);
+            PlayerTextDrawLetterSize(playerid,logonIndex_basePlayer[playerid][16], 0.180000, 0.899999);
+            PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][16], 845592575);
+            PlayerTextDrawSetOutline(playerid,logonIndex_basePlayer[playerid][16], 0);
+            PlayerTextDrawSetProportional(playerid,logonIndex_basePlayer[playerid][16], 1);
+            PlayerTextDrawSetShadow(playerid,logonIndex_basePlayer[playerid][16], 0);
+            PlayerTextDrawTextSize(playerid,logonIndex_basePlayer[playerid][16], 327.000000, 10.000000);
+            PlayerTextDrawSetSelectable(playerid,logonIndex_basePlayer[playerid][16], 1);
+
+            logonIndex_basePlayer[playerid][17] = CreatePlayerTextDraw(playerid,361.000000, 66.000000, "creditos");
+            PlayerTextDrawBackgroundColor(playerid,logonIndex_basePlayer[playerid][17], 255);
+            PlayerTextDrawFont(playerid,logonIndex_basePlayer[playerid][17], 2);
+            PlayerTextDrawLetterSize(playerid,logonIndex_basePlayer[playerid][17], 0.180000, 0.899999);
+            PlayerTextDrawColor(playerid,logonIndex_basePlayer[playerid][17], 845592575);
+            PlayerTextDrawSetOutline(playerid,logonIndex_basePlayer[playerid][17], 0);
+            PlayerTextDrawSetProportional(playerid,logonIndex_basePlayer[playerid][17], 1);
+            PlayerTextDrawSetShadow(playerid,logonIndex_basePlayer[playerid][17], 0);
+            PlayerTextDrawTextSize(playerid,logonIndex_basePlayer[playerid][17], 381.000000, 10.000000);
+            PlayerTextDrawSetSelectable(playerid,logonIndex_basePlayer[playerid][17], 1);
+
+            return 1;
+        }
+        case tela_inicio:
+        {
+            /*                  -----------   Player Textdraws - Local de login    -----------                */
+            logonLogin_Player[playerid][0] = CreatePlayerTextDraw(playerid,469.000000, 146.000000, "Nome_Sobrenome");
+            PlayerTextDrawAlignment(playerid,logonLogin_Player[playerid][0], 2);
+            PlayerTextDrawBackgroundColor(playerid,logonLogin_Player[playerid][0], 255);
+            PlayerTextDrawFont(playerid,logonLogin_Player[playerid][0], 2);
+            PlayerTextDrawLetterSize(playerid,logonLogin_Player[playerid][0], 0.180000, 0.899999);
+            PlayerTextDrawColor(playerid,logonLogin_Player[playerid][0], 2038004223);
+            PlayerTextDrawSetOutline(playerid,logonLogin_Player[playerid][0], 0);
+            PlayerTextDrawSetProportional(playerid,logonLogin_Player[playerid][0], 1);
+            PlayerTextDrawSetShadow(playerid,logonLogin_Player[playerid][0], 0);
+            PlayerTextDrawTextSize(playerid,logonLogin_Player[playerid][0], 10.000000, 80.000000);
+            PlayerTextDrawSetSelectable(playerid,logonLogin_Player[playerid][0], 1);
+
+            logonLogin_Player[playerid][1] = CreatePlayerTextDraw(playerid,469.000000, 186.000000, "]]]]]]]");
+            PlayerTextDrawAlignment(playerid,logonLogin_Player[playerid][1], 2);
+            PlayerTextDrawBackgroundColor(playerid,logonLogin_Player[playerid][1], 255);
+            PlayerTextDrawFont(playerid,logonLogin_Player[playerid][1], 2);
+            PlayerTextDrawLetterSize(playerid,logonLogin_Player[playerid][1], 0.180000, 0.899999);
+            PlayerTextDrawColor(playerid,logonLogin_Player[playerid][1], 2038004223);
+            PlayerTextDrawSetOutline(playerid,logonLogin_Player[playerid][1], 0);
+            PlayerTextDrawSetProportional(playerid,logonLogin_Player[playerid][1], 1);
+            PlayerTextDrawSetShadow(playerid,logonLogin_Player[playerid][1], 0);
+            PlayerTextDrawTextSize(playerid,logonLogin_Player[playerid][1], 10.000000, 80.000000);
+            PlayerTextDrawSetSelectable(playerid,logonLogin_Player[playerid][1], 1);
+
+            // --------
+
+            CreatePlayerTextdrawsNewsIndex(playerid); // Carrega as textdraws das notícias.
+            return 1;
+        }
+        case tela_community:
+        {
+            //null
+            return 1;
+        }
+        case tela_credits:
+        {
+            //null
+            return 1;
+        }
+        case tela_register:
+        {
+            /*                  -----------   Player Textdraws - Local de registro    -----------                */
+            logonRegister_Player[playerid][0] = CreatePlayerTextDraw(playerid, 409.000000, 190.000000, "Nome_Sobrenome");
+            PlayerTextDrawAlignment(playerid, logonRegister_Player[playerid][0], 2);
+            PlayerTextDrawBackgroundColor(playerid, logonRegister_Player[playerid][0], 255);
+            PlayerTextDrawFont(playerid, logonRegister_Player[playerid][0], 2);
+            PlayerTextDrawLetterSize(playerid, logonRegister_Player[playerid][0], 0.170000, 1.000000);
+            PlayerTextDrawColor(playerid, logonRegister_Player[playerid][0], 1970828799);
+            PlayerTextDrawSetOutline(playerid, logonRegister_Player[playerid][0], 0);
+            PlayerTextDrawSetProportional(playerid, logonRegister_Player[playerid][0], 1);
+            PlayerTextDrawSetShadow(playerid, logonRegister_Player[playerid][0], 0);
+            PlayerTextDrawTextSize(playerid,logonRegister_Player[playerid][0], 10.000000, 80.000000);
+            PlayerTextDrawSetSelectable(playerid, logonRegister_Player[playerid][0], 1);
+            
+            logonRegister_Player[playerid][1] = CreatePlayerTextDraw(playerid, 409.000000, 230.000000, "]]]]]]]");
+            PlayerTextDrawAlignment(playerid, logonRegister_Player[playerid][1], 2);
+            PlayerTextDrawBackgroundColor(playerid, logonRegister_Player[playerid][1], 255);
+            PlayerTextDrawFont(playerid, logonRegister_Player[playerid][1], 2);
+            PlayerTextDrawLetterSize(playerid, logonRegister_Player[playerid][1], 0.170000, 1.000000);
+            PlayerTextDrawColor(playerid, logonRegister_Player[playerid][1], 1970828799);
+            PlayerTextDrawSetOutline(playerid, logonRegister_Player[playerid][1], 0);
+            PlayerTextDrawSetProportional(playerid, logonRegister_Player[playerid][1], 1);
+            PlayerTextDrawSetShadow(playerid, logonRegister_Player[playerid][1], 0);
+            PlayerTextDrawTextSize(playerid,logonRegister_Player[playerid][1], 10.000000, 80.000000);
+            PlayerTextDrawSetSelectable(playerid, logonRegister_Player[playerid][1], 1);
+            
+            logonRegister_Player[playerid][2] = CreatePlayerTextDraw(playerid, 409.000000, 270.000000, "e-mail");
+            PlayerTextDrawAlignment(playerid, logonRegister_Player[playerid][2], 2);
+            PlayerTextDrawBackgroundColor(playerid, logonRegister_Player[playerid][2], 255);
+            PlayerTextDrawFont(playerid, logonRegister_Player[playerid][2], 2);
+            PlayerTextDrawLetterSize(playerid, logonRegister_Player[playerid][2], 0.170000, 1.000000);
+            PlayerTextDrawColor(playerid, logonRegister_Player[playerid][2], 1970828799);
+            PlayerTextDrawSetOutline(playerid, logonRegister_Player[playerid][2], 0);
+            PlayerTextDrawSetProportional(playerid, logonRegister_Player[playerid][2], 1);
+            PlayerTextDrawSetShadow(playerid, logonRegister_Player[playerid][2], 0);
+            PlayerTextDrawTextSize(playerid,logonRegister_Player[playerid][2], 10.000000, 80.000000);
+            PlayerTextDrawSetSelectable(playerid, logonRegister_Player[playerid][2], 1);
+            return 1;
+        }
+        case tela_register@lastregisters:
+        {
+
+
+
+            /* Textdraws do lado esquerdo da tela, na qual ficará as informações digitadas na outra tela 
+            de registro. */
+    
+            logonRegister_two@oldTxt[0] = CreatePlayerTextDraw(playerid,670.000000, -10.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@oldTxt[0], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@oldTxt[0], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@oldTxt[0], 0.500000, 54.000000);
+            PlayerTextDrawColor(playerid,logonRegister_two@oldTxt[0], -1);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@oldTxt[0], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@oldTxt[0], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@oldTxt[0], 1);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@oldTxt[0], 0);
+
+            logonRegister_two@oldTxt[1] = CreatePlayerTextDraw(playerid,260.000000, 80.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@oldTxt[1], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@oldTxt[1], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@oldTxt[1], 0.500000, 26.500001);
+            PlayerTextDrawColor(playerid,logonRegister_two@oldTxt[1], 962706943);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@oldTxt[1], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@oldTxt[1], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@oldTxt[1], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@oldTxt[1], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@oldTxt[1], 239905023);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@oldTxt[1], 79.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@oldTxt[1], 0);
+
+            logonRegister_two@oldTxt[2] = CreatePlayerTextDraw(playerid,258.000000, 78.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@oldTxt[2], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@oldTxt[2], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@oldTxt[2], 0.500000, 26.600002);
+            PlayerTextDrawColor(playerid,logonRegister_two@oldTxt[2], -1);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@oldTxt[2], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@oldTxt[2], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@oldTxt[2], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@oldTxt[2], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@oldTxt[2], 239905023);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@oldTxt[2], 81.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@oldTxt[2], 0);
+
+            logonRegister_two@oldTxt[3] = CreatePlayerTextDraw(playerid,80.000000, 75.000000, "LD_BEAT:chit");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@oldTxt[3], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@oldTxt[3], 4);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@oldTxt[3], 0.500000, 1.000000);
+            PlayerTextDrawColor(playerid,logonRegister_two@oldTxt[3], 239905023);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@oldTxt[3], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@oldTxt[3], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@oldTxt[3], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@oldTxt[3], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@oldTxt[3], 255);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@oldTxt[3], 8.000000, 7.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@oldTxt[3], 0);
+
+            logonRegister_two@oldTxt[4] = CreatePlayerTextDraw(playerid,251.000000, 75.000000, "LD_BEAT:chit");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@oldTxt[4], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@oldTxt[4], 4);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@oldTxt[4], 0.500000, 1.000000);
+            PlayerTextDrawColor(playerid,logonRegister_two@oldTxt[4], 239905023);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@oldTxt[4], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@oldTxt[4], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@oldTxt[4], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@oldTxt[4], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@oldTxt[4], 255);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@oldTxt[4], 8.000000, 7.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@oldTxt[4], 0);
+
+            logonRegister_two@oldTxt[5] = CreatePlayerTextDraw(playerid,80.000000, 316.000000, "LD_BEAT:chit");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@oldTxt[5], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@oldTxt[5], 4);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@oldTxt[5], 0.500000, 1.000000);
+            PlayerTextDrawColor(playerid,logonRegister_two@oldTxt[5], -1077357825);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@oldTxt[5], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@oldTxt[5], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@oldTxt[5], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@oldTxt[5], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@oldTxt[5], 255);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@oldTxt[5], 8.000000, 7.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@oldTxt[5], 0);
+
+            logonRegister_two@oldTxt[6] = CreatePlayerTextDraw(playerid,251.000000, 316.000000, "LD_BEAT:chit");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@oldTxt[6], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@oldTxt[6], 4);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@oldTxt[6], 0.500000, 1.000000);
+            PlayerTextDrawColor(playerid,logonRegister_two@oldTxt[6], -1077357825);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@oldTxt[6], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@oldTxt[6], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@oldTxt[6], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@oldTxt[6], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@oldTxt[6], 255);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@oldTxt[6], 8.000000, 7.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@oldTxt[6], 0);
+
+            logonRegister_two@oldTxt[7] = CreatePlayerTextDraw(playerid,116.000000, 100.000000, "REGISTRE-SE!");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@oldTxt[7], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@oldTxt[7], 2);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@oldTxt[7], 0.409999, 2.799999);
+            PlayerTextDrawColor(playerid,logonRegister_two@oldTxt[7], -1);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@oldTxt[7], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@oldTxt[7], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@oldTxt[7], 0);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@oldTxt[7], 0);
+
+            logonRegister_two@oldTxt[8] = CreatePlayerTextDraw(playerid,148.000000, 121.000000, "E gratuito e sempre sera...");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@oldTxt[8], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@oldTxt[8], 2);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@oldTxt[8], 0.129999, 0.899999);
+            PlayerTextDrawColor(playerid,logonRegister_two@oldTxt[8], -1);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@oldTxt[8], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@oldTxt[8], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@oldTxt[8], 0);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@oldTxt[8], 0);
+
+            logonRegister_two@oldTxt[9] = CreatePlayerTextDraw(playerid,260.000000, 158.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@oldTxt[9], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@oldTxt[9], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@oldTxt[9], 0.500000, 17.700002);
+            PlayerTextDrawColor(playerid,logonRegister_two@oldTxt[9], -1);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@oldTxt[9], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@oldTxt[9], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@oldTxt[9], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@oldTxt[9], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@oldTxt[9], -1077357825);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@oldTxt[9], 79.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@oldTxt[9], 0);
+
+            logonRegister_two@oldTxt[10] = CreatePlayerTextDraw(playerid,258.000000, 313.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@oldTxt[10], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@oldTxt[10], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@oldTxt[10], 0.500000, 0.750000);
+            PlayerTextDrawColor(playerid,logonRegister_two@oldTxt[10], -1);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@oldTxt[10], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@oldTxt[10], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@oldTxt[10], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@oldTxt[10], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@oldTxt[10], -1077357825);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@oldTxt[10], 81.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@oldTxt[10], 0);
+
+            logonRegister_two@oldTxt[11] = CreatePlayerTextDraw(playerid,240.000000, 189.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@oldTxt[11], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@oldTxt[11], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@oldTxt[11], 0.500000, 1.400002);
+            PlayerTextDrawColor(playerid,logonRegister_two@oldTxt[11], -1);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@oldTxt[11], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@oldTxt[11], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@oldTxt[11], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@oldTxt[11], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@oldTxt[11], -303174145);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@oldTxt[11], 99.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@oldTxt[11], 0);
+
+            logonRegister_two@oldTxt[12] = CreatePlayerTextDraw(playerid,239.000000, 188.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@oldTxt[12], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@oldTxt[12], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@oldTxt[12], 0.500000, 1.600002);
+            PlayerTextDrawColor(playerid,logonRegister_two@oldTxt[12], -1);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@oldTxt[12], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@oldTxt[12], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@oldTxt[12], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@oldTxt[12], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@oldTxt[12], -303174145);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@oldTxt[12], 100.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@oldTxt[12], 0);
+
+            logonRegister_two@oldTxt[13] = CreatePlayerTextDraw(playerid,239.000000, 207.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@oldTxt[13], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@oldTxt[13], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@oldTxt[13], 0.500000, -0.399996);
+            PlayerTextDrawColor(playerid,logonRegister_two@oldTxt[13], -1);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@oldTxt[13], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@oldTxt[13], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@oldTxt[13], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@oldTxt[13], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@oldTxt[13], 50);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@oldTxt[13], 100.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@oldTxt[13], 0);
+
+            logonRegister_two@oldTxt[14] = CreatePlayerTextDraw(playerid,101.000000, 174.000000, "Nick digitado");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@oldTxt[14], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@oldTxt[14], 2);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@oldTxt[14], 0.170000, 1.000000);
+            PlayerTextDrawColor(playerid,logonRegister_two@oldTxt[14], 1299888127);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@oldTxt[14], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@oldTxt[14], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@oldTxt[14], 0);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@oldTxt[14], 0);
+
+            logonRegister_two@oldTxt[15] = CreatePlayerTextDraw(playerid,169.000000, 190.000000, "Nome_Sobrenome");
+            PlayerTextDrawAlignment(playerid,logonRegister_two@oldTxt[15], 2);
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@oldTxt[15], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@oldTxt[15], 2);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@oldTxt[15], 0.170000, 1.000000);
+            PlayerTextDrawColor(playerid,logonRegister_two@oldTxt[15], 1970828799);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@oldTxt[15], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@oldTxt[15], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@oldTxt[15], 0);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@oldTxt[15], 0);
+
+            logonRegister_two@oldTxt[16] = CreatePlayerTextDraw(playerid,240.000000, 229.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@oldTxt[16], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@oldTxt[16], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@oldTxt[16], 0.500000, 1.400002);
+            PlayerTextDrawColor(playerid,logonRegister_two@oldTxt[16], -1);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@oldTxt[16], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@oldTxt[16], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@oldTxt[16], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@oldTxt[16], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@oldTxt[16], -303174145);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@oldTxt[16], 99.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@oldTxt[16], 0);
+
+            logonRegister_two@oldTxt[17] = CreatePlayerTextDraw(playerid,239.000000, 228.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@oldTxt[17], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@oldTxt[17], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@oldTxt[17], 0.500000, 1.600002);
+            PlayerTextDrawColor(playerid,logonRegister_two@oldTxt[17], -1);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@oldTxt[17], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@oldTxt[17], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@oldTxt[17], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@oldTxt[17], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@oldTxt[17], -303174145);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@oldTxt[17], 100.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@oldTxt[17], 0);
+
+            logonRegister_two@oldTxt[18] = CreatePlayerTextDraw(playerid,239.000000, 247.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@oldTxt[18], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@oldTxt[18], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@oldTxt[18], 0.500000, -0.399996);
+            PlayerTextDrawColor(playerid,logonRegister_two@oldTxt[18], -1);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@oldTxt[18], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@oldTxt[18], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@oldTxt[18], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@oldTxt[18], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@oldTxt[18], 50);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@oldTxt[18], 100.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@oldTxt[18], 0);
+
+            logonRegister_two@oldTxt[19] = CreatePlayerTextDraw(playerid,101.000000, 214.000000, "Senha digitada");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@oldTxt[19], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@oldTxt[19], 2);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@oldTxt[19], 0.170000, 1.000000);
+            PlayerTextDrawColor(playerid,logonRegister_two@oldTxt[19], 1299888127);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@oldTxt[19], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@oldTxt[19], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@oldTxt[19], 0);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@oldTxt[19], 0);
+
+            logonRegister_two@oldTxt[20] = CreatePlayerTextDraw(playerid,169.000000, 230.000000, "]]]]]]]");
+            PlayerTextDrawAlignment(playerid,logonRegister_two@oldTxt[20], 2);
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@oldTxt[20], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@oldTxt[20], 2);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@oldTxt[20], 0.170000, 1.000000);
+            PlayerTextDrawColor(playerid,logonRegister_two@oldTxt[20], 1970828799);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@oldTxt[20], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@oldTxt[20], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@oldTxt[20], 0);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@oldTxt[20], 0);
+
+            logonRegister_two@oldTxt[21] = CreatePlayerTextDraw(playerid,240.000000, 269.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@oldTxt[21], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@oldTxt[21], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@oldTxt[21], 0.500000, 1.400002);
+            PlayerTextDrawColor(playerid,logonRegister_two@oldTxt[21], -1);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@oldTxt[21], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@oldTxt[21], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@oldTxt[21], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@oldTxt[21], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@oldTxt[21], -303174145);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@oldTxt[21], 99.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@oldTxt[21], 0);
+
+            logonRegister_two@oldTxt[22] = CreatePlayerTextDraw(playerid,239.000000, 268.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@oldTxt[22], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@oldTxt[22], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@oldTxt[22], 0.500000, 1.600002);
+            PlayerTextDrawColor(playerid,logonRegister_two@oldTxt[22], -1);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@oldTxt[22], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@oldTxt[22], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@oldTxt[22], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@oldTxt[22], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@oldTxt[22], -303174145);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@oldTxt[22], 100.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@oldTxt[22], 0);
+
+            logonRegister_two@oldTxt[23] = CreatePlayerTextDraw(playerid,239.000000, 287.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@oldTxt[23], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@oldTxt[23], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@oldTxt[23], 0.500000, -0.399996);
+            PlayerTextDrawColor(playerid,logonRegister_two@oldTxt[23], -1);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@oldTxt[23], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@oldTxt[23], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@oldTxt[23], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@oldTxt[23], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@oldTxt[23], 50);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@oldTxt[23], 100.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@oldTxt[23], 0);
+
+            logonRegister_two@oldTxt[24] = CreatePlayerTextDraw(playerid,101.000000, 254.000000, "E-mail digitado");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@oldTxt[24], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@oldTxt[24], 2);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@oldTxt[24], 0.170000, 1.000000);
+            PlayerTextDrawColor(playerid,logonRegister_two@oldTxt[24], 1299888127);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@oldTxt[24], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@oldTxt[24], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@oldTxt[24], 0);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@oldTxt[24], 0);
+
+            logonRegister_two@oldTxt[25] = CreatePlayerTextDraw(playerid,169.000000, 270.000000, "abc13212332");
+            PlayerTextDrawAlignment(playerid,logonRegister_two@oldTxt[25], 2);
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@oldTxt[25], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@oldTxt[25], 2);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@oldTxt[25], 0.170000, 1.000000);
+            PlayerTextDrawColor(playerid,logonRegister_two@oldTxt[25], 1970828799);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@oldTxt[25], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@oldTxt[25], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@oldTxt[25], 0);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@oldTxt[25], 0);
+
+            logonRegister_two@oldTxt[26] = CreatePlayerTextDraw(playerid,169.000000, 300.000000, "Voltar");
+            PlayerTextDrawAlignment(playerid,logonRegister_two@oldTxt[26], 2);
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@oldTxt[26], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@oldTxt[26], 2);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@oldTxt[26], 0.170000, 1.000000);
+            PlayerTextDrawColor(playerid,logonRegister_two@oldTxt[26], 1970828799);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@oldTxt[26], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@oldTxt[26], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@oldTxt[26], 0);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@oldTxt[26], 10.000000, 80.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@oldTxt[26], 1);
+
+
+
+
+
+            /* Flexa */
+            logonRegister_two@flexa[0] = CreatePlayerTextDraw(playerid,290.000000, 160.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@flexa[0], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@flexa[0], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@flexa[0], 0.500000, 0.100000);
+            PlayerTextDrawColor(playerid,logonRegister_two@flexa[0], -1);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@flexa[0], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@flexa[0], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@flexa[0], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@flexa[0], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@flexa[0], -1077357825);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@flexa[0], 260.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@flexa[0], 0);
+
+            logonRegister_two@flexa[1] = CreatePlayerTextDraw(playerid,290.000000, 162.300003, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@flexa[1], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@flexa[1], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@flexa[1], 0.500000, 2.399998);
+            PlayerTextDrawColor(playerid,logonRegister_two@flexa[1], -1);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@flexa[1], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@flexa[1], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@flexa[1], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@flexa[1], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@flexa[1], -1077357825);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@flexa[1], 282.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@flexa[1], 0);
+
+            logonRegister_two@flexa[2] = CreatePlayerTextDraw(playerid,300.000000, 183.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@flexa[2], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@flexa[2], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@flexa[2], 0.500000, 0.100000);
+            PlayerTextDrawColor(playerid,logonRegister_two@flexa[2], -1);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@flexa[2], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@flexa[2], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@flexa[2], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@flexa[2], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@flexa[2], -1077357825);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@flexa[2], 284.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@flexa[2], 0);
+
+            logonRegister_two@flexa[3] = CreatePlayerTextDraw(playerid,300.000000, 177.000000, "flexa");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@flexa[3], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@flexa[3], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@flexa[3], 0.500000, 1.399999);
+            PlayerTextDrawColor(playerid,logonRegister_two@flexa[3], 0);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@flexa[3], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@flexa[3], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@flexa[3], 0);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@flexa[3], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@flexa[3], -1077357825);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@flexa[3], 295.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@flexa[3], 0);
+
+            logonRegister_two@flexa[4] = CreatePlayerTextDraw(playerid,301.000000, 178.000000, "flexa");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@flexa[4], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@flexa[4], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@flexa[4], 0.500000, 1.193999);
+            PlayerTextDrawColor(playerid,logonRegister_two@flexa[4], 0);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@flexa[4], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@flexa[4], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@flexa[4], 0);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@flexa[4], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@flexa[4], -1077357825);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@flexa[4], 296.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@flexa[4], 0);
+
+            logonRegister_two@flexa[5] = CreatePlayerTextDraw(playerid,302.000000, 179.500000, "flexa");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@flexa[5], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@flexa[5], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@flexa[5], 0.500000, 0.893998);
+            PlayerTextDrawColor(playerid,logonRegister_two@flexa[5], 0);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@flexa[5], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@flexa[5], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@flexa[5], 0);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@flexa[5], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@flexa[5], -1077357825);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@flexa[5], 296.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@flexa[5], 0);
+
+            logonRegister_two@flexa[6] = CreatePlayerTextDraw(playerid,303.000000, 180.500000, "flexa");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@flexa[6], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@flexa[6], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@flexa[6], 0.500000, 0.649999);
+            PlayerTextDrawColor(playerid,logonRegister_two@flexa[6], 0);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@flexa[6], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@flexa[6], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@flexa[6], 0);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@flexa[6], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@flexa[6], -1077357825);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@flexa[6], 296.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@flexa[6], 0);
+
+            logonRegister_two@flexa[7] = CreatePlayerTextDraw(playerid,304.000000, 181.500000, "flexa");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@flexa[7], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@flexa[7], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@flexa[7], 0.500000, 0.400000);
+            PlayerTextDrawColor(playerid,logonRegister_two@flexa[7], 0);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@flexa[7], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@flexa[7], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@flexa[7], 0);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@flexa[7], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@flexa[7], -1077357825);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@flexa[7], 296.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@flexa[7], 0);
+
+            logonRegister_two@flexa[8] = CreatePlayerTextDraw(playerid,305.000000, 183.000000, "flexa");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@flexa[8], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@flexa[8], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@flexa[8], 0.500000, 0.100000);
+            PlayerTextDrawColor(playerid,logonRegister_two@flexa[8], 0);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@flexa[8], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@flexa[8], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@flexa[8], 0);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@flexa[8], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@flexa[8], -1077357825);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@flexa[8], 296.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@flexa[8], 0);
+
+            logonRegister_two@flexa[9] = CreatePlayerTextDraw(playerid,305.500000, 184.000000, "flexa");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@flexa[9], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@flexa[9], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@flexa[9], 0.500000, -0.099999);
+            PlayerTextDrawColor(playerid,logonRegister_two@flexa[9], 0);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@flexa[9], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@flexa[9], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@flexa[9], 0);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@flexa[9], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@flexa[9], -1077357825);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@flexa[9], 296.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@flexa[9], 0);
+
+            logonRegister_two@flexa[10] = CreatePlayerTextDraw(playerid,306.500000, 185.000000, "flexa");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@flexa[10], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@flexa[10], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@flexa[10], 0.500000, -0.349999);
+            PlayerTextDrawColor(playerid,logonRegister_two@flexa[10], 0);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@flexa[10], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@flexa[10], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@flexa[10], 0);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@flexa[10], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@flexa[10], -1077357825);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@flexa[10], 296.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@flexa[10], 0);
+            return 1;
+        }
+        case tela_register@confirmmail:
+        {
+            /* Confirmar e-mail */
+            /*logonRegister_two@cnfMail[0] = CreatePlayerTextDraw(playerid,670.000000, -10.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@cnfMail[0], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@cnfMail[0], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@cnfMail[0], 0.500000, 54.000000);
+            PlayerTextDrawColor(playerid,logonRegister_two@cnfMail[0], -1);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@cnfMail[0], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@cnfMail[0], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@cnfMail[0], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@cnfMail[0], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@cnfMail[0], 90);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@cnfMail[0], -100.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@cnfMail[0], 0);*/
+
+            logonRegister_two@cnfMail[1] = CreatePlayerTextDraw(playerid,489.000000, 121.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@cnfMail[1], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@cnfMail[1], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@cnfMail[1], 0.500000, 11.500000);
+            PlayerTextDrawColor(playerid,logonRegister_two@cnfMail[1], 962706943);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@cnfMail[1], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@cnfMail[1], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@cnfMail[1], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@cnfMail[1], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@cnfMail[1], -1077357825);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@cnfMail[1], 307.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@cnfMail[1], 0);
+
+            logonRegister_two@cnfMail[2] = CreatePlayerTextDraw(playerid,486.000000, 119.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@cnfMail[2], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@cnfMail[2], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@cnfMail[2], 0.500000, 12.000002);
+            PlayerTextDrawColor(playerid,logonRegister_two@cnfMail[2], -1);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@cnfMail[2], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@cnfMail[2], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@cnfMail[2], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@cnfMail[2], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@cnfMail[2], -1077357825);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@cnfMail[2], 310.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@cnfMail[2], 0);
+
+            logonRegister_two@cnfMail[3] = CreatePlayerTextDraw(playerid,308.000000, 116.000000, "LD_BEAT:chit");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@cnfMail[3], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@cnfMail[3], 4);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@cnfMail[3], 0.500000, 1.000000);
+            PlayerTextDrawColor(playerid,logonRegister_two@cnfMail[3], -1077357825);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@cnfMail[3], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@cnfMail[3], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@cnfMail[3], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@cnfMail[3], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@cnfMail[3], 255);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@cnfMail[3], 8.000000, 7.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@cnfMail[3], 0);
+
+            logonRegister_two@cnfMail[4] = CreatePlayerTextDraw(playerid,480.000000, 116.000000, "LD_BEAT:chit");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@cnfMail[4], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@cnfMail[4], 4);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@cnfMail[4], 0.500000, 1.000000);
+            PlayerTextDrawColor(playerid,logonRegister_two@cnfMail[4], -1077357825);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@cnfMail[4], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@cnfMail[4], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@cnfMail[4], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@cnfMail[4], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@cnfMail[4], 255);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@cnfMail[4], 8.000000, 7.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@cnfMail[4], 0);
+
+            logonRegister_two@cnfMail[5] = CreatePlayerTextDraw(playerid,308.000000, 223.000000, "LD_BEAT:chit");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@cnfMail[5], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@cnfMail[5], 4);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@cnfMail[5], 0.500000, 1.000000);
+            PlayerTextDrawColor(playerid,logonRegister_two@cnfMail[5], -1077357825);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@cnfMail[5], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@cnfMail[5], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@cnfMail[5], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@cnfMail[5], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@cnfMail[5], 255);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@cnfMail[5], 8.000000, 7.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@cnfMail[5], 0);
+
+            logonRegister_two@cnfMail[6] = CreatePlayerTextDraw(playerid,480.000000, 223.000000, "LD_BEAT:chit");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@cnfMail[6], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@cnfMail[6], 4);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@cnfMail[6], 0.500000, 1.000000);
+            PlayerTextDrawColor(playerid,logonRegister_two@cnfMail[6], -1077357825);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@cnfMail[6], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@cnfMail[6], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@cnfMail[6], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@cnfMail[6], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@cnfMail[6], 255);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@cnfMail[6], 8.000000, 7.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@cnfMail[6], 0);
+
+            logonRegister_two@cnfMail[7] = CreatePlayerTextDraw(playerid,469.000000, 119.000000, "LD_BEAT:chit");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@cnfMail[7], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@cnfMail[7], 4);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@cnfMail[7], 0.500000, 1.000000);
+            PlayerTextDrawColor(playerid,logonRegister_two@cnfMail[7], 120);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@cnfMail[7], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@cnfMail[7], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@cnfMail[7], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@cnfMail[7], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@cnfMail[7], 255);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@cnfMail[7], 16.000000, 20.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@cnfMail[7], 0);
+
+            logonRegister_two@cnfMail[8] = CreatePlayerTextDraw(playerid,470.000000, 120.000000, "LD_BEAT:chit");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@cnfMail[8], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@cnfMail[8], 4);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@cnfMail[8], 0.500000, 1.000000);
+            PlayerTextDrawColor(playerid,logonRegister_two@cnfMail[8], -1);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@cnfMail[8], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@cnfMail[8], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@cnfMail[8], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@cnfMail[8], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@cnfMail[8], 255);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@cnfMail[8], 14.000000, 17.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@cnfMail[8], 0);
+
+            logonRegister_two@cnfMail[9] = CreatePlayerTextDraw(playerid,474.299987, 123.500000, "x");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@cnfMail[9], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@cnfMail[9], 2);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@cnfMail[9], 0.209999, 1.000000);
+            PlayerTextDrawColor(playerid,logonRegister_two@cnfMail[9], 357276927);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@cnfMail[9], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@cnfMail[9], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@cnfMail[9], 0);
+            PlayerTextDrawTextSize(playerid, logonRegister_two@cnfMail[9], 480.299987, 10.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@cnfMail[9], 1);
+
+
+
+            logonRegister_two@cnfMail[10] = CreatePlayerTextDraw(playerid,399.000000, 179.000000, "Para prosseguir, voce deve confirmar~n~seu e-mail indo ate sua caixa de entrada~n~e clicando no link informado.");
+            PlayerTextDrawAlignment(playerid,logonRegister_two@cnfMail[10], 2);
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@cnfMail[10], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@cnfMail[10], 2);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@cnfMail[10], 0.170000, 1.000000);
+            PlayerTextDrawColor(playerid,logonRegister_two@cnfMail[10], 1970828799);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@cnfMail[10], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@cnfMail[10], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@cnfMail[10], 0);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@cnfMail[10], 0);
+
+
+            /*
+
+            logonRegister_two@cnfMail[10] = CreatePlayerTextDraw(playerid,399.000000, 185.000000, "Aguarde.~n~Estamos carregando as informacoes");
+            PlayerTextDrawAlignment(playerid,logonRegister_two@cnfMail[10], 2);
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@cnfMail[10], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@cnfMail[10], 2);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@cnfMail[10], 0.170000, 1.000000);
+            PlayerTextDrawColor(playerid,logonRegister_two@cnfMail[10], 1970828799);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@cnfMail[10], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@cnfMail[10], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@cnfMail[10], 0);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@cnfMail[10], 0);
+
+
+            */
+
+            logonRegister_two@cnfMail[11] = CreatePlayerTextDraw(playerid,468.000000, 149.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@cnfMail[11], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@cnfMail[11], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@cnfMail[11], 0.500000, 1.400002);
+            PlayerTextDrawColor(playerid,logonRegister_two@cnfMail[11], -1);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@cnfMail[11], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@cnfMail[11], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@cnfMail[11], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@cnfMail[11], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@cnfMail[11], -303174145);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@cnfMail[11], 329.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@cnfMail[11], 0);
+
+            logonRegister_two@cnfMail[12] = CreatePlayerTextDraw(playerid,467.000000, 148.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@cnfMail[12], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@cnfMail[12], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@cnfMail[12], 0.500000, 1.600002);
+            PlayerTextDrawColor(playerid,logonRegister_two@cnfMail[12], -1);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@cnfMail[12], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@cnfMail[12], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@cnfMail[12], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@cnfMail[12], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@cnfMail[12], -303174145);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@cnfMail[12], 330.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@cnfMail[12], 0);
+
+            logonRegister_two@cnfMail[13] = CreatePlayerTextDraw(playerid,467.000000, 167.000000, "_");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@cnfMail[13], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@cnfMail[13], 1);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@cnfMail[13], 0.500000, -0.399996);
+            PlayerTextDrawColor(playerid,logonRegister_two@cnfMail[13], -1);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@cnfMail[13], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@cnfMail[13], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@cnfMail[13], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@cnfMail[13], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@cnfMail[13], 50);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@cnfMail[13], 330.000000, 0.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@cnfMail[13], 0);
+
+            logonRegister_two@cnfMail[14] = CreatePlayerTextDraw(playerid,331.000000, 134.000000, "Confirme seu e-mail");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@cnfMail[14], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@cnfMail[14], 2);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@cnfMail[14], 0.170000, 1.000000);
+            PlayerTextDrawColor(playerid,logonRegister_two@cnfMail[14], 1299888127);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@cnfMail[14], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@cnfMail[14], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@cnfMail[14], 0);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@cnfMail[14], 0);
+
+            logonRegister_two@cnfMail[15] = CreatePlayerTextDraw(playerid,399.000000, 150.000000, "Aguardando..");
+            PlayerTextDrawAlignment(playerid,logonRegister_two@cnfMail[15], 2);
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@cnfMail[15], 255);
+            PlayerTextDrawFont(playerid,logonRegister_two@cnfMail[15], 2);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@cnfMail[15], 0.170000, 1.000000);
+            PlayerTextDrawColor(playerid,logonRegister_two@cnfMail[15], 1970828799);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@cnfMail[15], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@cnfMail[15], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@cnfMail[15], 0);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@cnfMail[15], 0);
+
+            logonRegister_two@cnfMail[16] = CreatePlayerTextDraw(playerid,443.000000, 146.000000, "icone_ajudaCFMail");
+            PlayerTextDrawBackgroundColor(playerid,logonRegister_two@cnfMail[16], 0);
+            PlayerTextDrawFont(playerid,logonRegister_two@cnfMail[16], 5);
+            PlayerTextDrawLetterSize(playerid,logonRegister_two@cnfMail[16], 0.500000, 1.000000);
+            PlayerTextDrawColor(playerid,logonRegister_two@cnfMail[16], -1);
+            PlayerTextDrawSetOutline(playerid,logonRegister_two@cnfMail[16], 0);
+            PlayerTextDrawSetProportional(playerid,logonRegister_two@cnfMail[16], 1);
+            PlayerTextDrawSetShadow(playerid,logonRegister_two@cnfMail[16], 1);
+            PlayerTextDrawUseBox(playerid,logonRegister_two@cnfMail[16], 1);
+            PlayerTextDrawBoxColor(playerid,logonRegister_two@cnfMail[16], 255);
+            PlayerTextDrawTextSize(playerid,logonRegister_two@cnfMail[16], 28.000000, 18.000000);
+            PlayerTextDrawSetPreviewModel(playerid, logonRegister_two@cnfMail[16], 1239);
+            PlayerTextDrawSetPreviewRot(playerid, logonRegister_two@cnfMail[16], -2.000000, 0.000000, -180.000000, 1.000000);
+            PlayerTextDrawSetSelectable(playerid,logonRegister_two@cnfMail[16], 1);
+            return 1;
+        }
+        case tela_register@inputdados:
+        {
+            return 1;
+        }
+    }
+    return 1;
+}
+
+DestroyPlayerTextdrawsLogon(playerid, telaid)
+{
+    switch(telaid)
+    {
+        case tela_base:
+        {
+            for(new i = 0; i < 18; ++i) PlayerTextDrawDestroy(playerid, logonIndex_basePlayer[playerid][i]);
+            return 1;
+        }
+        case tela_inicio:
+        {
+            for(new i = 0; i < 2; ++i) PlayerTextDrawDestroy(playerid, logonLogin_Player[playerid][i]);
+            DestroyPlayerTextdrawsNewsIndex(playerid);
+            return 1;
+        }
+        case tela_community:
+        {
+            //null
+            return 1;
+        }
+        case tela_credits:
+        {
+            //null
+            return 1;
+        }
+        case tela_register:
+        {
+            for(new i = 0; i < 3; ++i) PlayerTextDrawDestroy(playerid, logonRegister_Player[playerid][i]);
+            return 1;
+        }
+        case tela_register@lastregisters:
+        {
+            for(new i = 0; i < 27; ++i) PlayerTextDrawDestroy(playerid, logonRegister_two@oldTxt[i]);
+            for(new i = 0; i < 11; ++i) PlayerTextDrawDestroy(playerid, logonRegister_two@flexa[i]);
+            return 1;
+        }
+        case tela_register@confirmmail:
+        {
+            for(new i = 1; i < 17; i++) PlayerTextDrawDestroy(playerid, logonRegister_two@cnfMail[i]);
+            return 1;
+        }
+        case tela_register@inputdados:
+        {
+            return 1;
+        }
+    }
+    return 1;
+}
+
+ShowLogon(playerid, telaID)
+{
+    switch(telaID)
+    {
+        case tela_base:
+        {
+            SelectTextDraw(playerid, 0xFFFFFFFF);
+            for(new i = 0; i < 9; i++) TextDrawShowForPlayer(playerid, logonIndex_base[i]);
+            for(new i = 0; i < 18; i++) PlayerTextDrawShow(playerid, logonIndex_basePlayer[playerid][i]);
+            return 1;
+        }
+        case tela_inicio:
+        {
+            SetPVarInt(playerid, "telaLogon_telaid", tela_inicio);
+
+            for(new i = 0; i < 18; i++) TextDrawShowForPlayer(playerid, logonLogin[i]);
+            for(new i = 0; i < 2; i++) PlayerTextDrawShow(playerid, logonLogin_Player[playerid][i]);
+
+            ShowNewsInIndex(playerid); // Carrega a base das noticias.
+            ShowTextdrawsInfoServer(playerid); // Carrega as informações dos últimos cadastrados, e quantidade de casas/contas/empresas do servidor.
+            return 1;
+        }
+        case tela_register: // Primeira tela de registro, aquela que quando você clica na tela de 'login' no "registrar-se"
+        {
+            SetPVarInt(playerid, "telaLogon_telaid", tela_register);
+            for(new i = 1; i < 35; i++) TextDrawShowForPlayer(playerid, logonRegister[i]);
+            for(new i = 0; i < 3; i++) PlayerTextDrawShow(playerid, logonRegister_Player[playerid][i]);
+        }
+        case tela_register@lastregisters: // Tela a onde mostra as últimas informações que o player digitou na tela anterior. Aquela que tem a flexa.
+        {
+            for(new i = 0; i < 27; i++) PlayerTextDrawShow(playerid, logonRegister_two@oldTxt[i]);
+            for(new i = 0; i < 11; i++) PlayerTextDrawShow(playerid, logonRegister_two@flexa[i]);
+            return 1;
+        }
+        case tela_register@confirmmail: // Tela que faz a confirmação do e-mail.
+        {
+            SetPVarInt(playerid, "telaLogon_telaid", tela_register@confirmmail);
+            for(new i = 1; i < 17; i++) PlayerTextDrawShow(playerid, logonRegister_two@cnfMail[i]);
+
+
+            /* Salva os valores */
+            new playerName[41];
+            GetPVarString(playerid, "register@playername", playerName, sizeof(playerName));
+
+            new playerMail[41];
+            GetPVarString(playerid, "register@email", playerMail, sizeof(playerMail));
+
+            new playerPassword[20];
+            GetPVarString(playerid, "register@password", playerPassword, sizeof(playerPassword));
+
+
+            /* Altera os valores */
+            PlayerTextDrawSetString(playerid, logonRegister_two@oldTxt[15], playerName);
+            PlayerTextDrawSetString(playerid, logonRegister_two@oldTxt[20], playerPassword);
+            PlayerTextDrawSetString(playerid, logonRegister_two@oldTxt[25], playerMail);
+            return 1;
+        }
+        case tela_register@inputdados:
+        {
+            return 1;
+        }
+    }
+    return 1;
+}
+
+HideLogon(playerid, telaID)
+{
+    SetPVarInt(playerid, "telaLogon_telaid", -1);
+    switch(telaID)
+    {
+        case tela_base:
+        {
+            for(new i = 0; i < 9; i++) TextDrawHideForPlayer(playerid, logonIndex_base[i]);
+            for(new i = 0; i < 18; i++) PlayerTextDrawHide(playerid, logonIndex_basePlayer[playerid][i]);
+            return 1;
+        }
+        case tela_inicio:
+        {
+            for(new i = 0; i < 18; i++) TextDrawHideForPlayer(playerid, logonLogin[i]);
+            for(new i = 0; i < 2; i++) PlayerTextDrawHide(playerid, logonLogin_Player[playerid][i]);
+
+            HideNewsInIndex(playerid); // Carrega a base das noticias.
+            HideTextdrawsInfoServer(playerid); // Carrega as informações dos últimos cadastrados, e quantidade de casas/contas/empresas do servidor.
+            return 1;
+        }
+        case tela_register:
+        {
+            for(new i = 1; i < 35; i++) TextDrawHideForPlayer(playerid, logonRegister[i]);
+            for(new i = 0; i < 3; i++) PlayerTextDrawHide(playerid, logonRegister_Player[playerid][i]);
+        }
+        case tela_register@lastregisters:
+        {
+            for(new i = 0; i < 27; i++) PlayerTextDrawHide(playerid, logonRegister_two@oldTxt[i]);
+            for(new i = 0; i < 11; i++) PlayerTextDrawHide(playerid, logonRegister_two@flexa[i]);
+            return 1;
+        }
+        case tela_register@confirmmail:
+        {
+            for(new i = 1; i < 17; i++) PlayerTextDrawHide(playerid, logonRegister_two@cnfMail[i]);
+            return 1;
+        }
+        case tela_register@inputdados:
+        {
+            return 1;
+        }
+    }
+    return 1;
+}
+
+GetPlayerTelaID(playerid)
+{
+    return GetPVarInt(playerid, "telaLogon_telaid");
+}
+
+SetPlayerInfos(playerid, bool:register = false, info_id, text[]) // Função que irá setar o que for pedido nas textdraws, exemplo: Nickname.
+{
+    switch(info_id)
+    {
+        case textdraw_Playername:
+        {
+            if(register == true)
+            {
+                // Dados do registro.
+                SetPlayerName(playerid, text);
+                PlayerTextDrawSetString(playerid, logonRegister_Player[playerid][0], text);
+                return 1;
+            }
+            else 
+            {
+                // Dados do login.
+                SetPlayerName(playerid, text);
+                PlayerTextDrawSetString(playerid, logonLogin_Player[playerid][0], text);
+            }
+        }
+        case textdraw_Password:
+        {
+            if(register == true)
+            {
+                // Dados do registro.
+                PasswordEncode(text, strlen(text));
+                PlayerTextDrawSetString(playerid, logonRegister_Player[playerid][1], text);
+                return 1;
+            }
+            else 
+            {
+                // Dados do login.
+                PasswordEncode(text, strlen(text));
+                PlayerTextDrawSetString(playerid, logonLogin_Player[playerid][1], text);
+            }
+        }
+
+        //
+        case textdraw_Email:
+        {
+            PlayerTextDrawSetString(playerid, logonRegister_Player[playerid][2], text);
+        }
+    }
+    return 1;
+}
+
+//--------------------------------

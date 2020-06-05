@@ -1,0 +1,66 @@
+#include "..\..\inc\YSI\y_hooks"
+
+stock bool:yeeah__CheckIfUserExists(username[])
+{
+	new query[47 + 50];
+	mysql_format(yeeah__mysqlConnect, query, sizeof(query), "SELECT `id` FROM `users` WHERE `usuario` = '%e'", username);
+	mysql_query(yeeah__mysqlConnect, query);
+
+	if(cache_num_rows() == 1)
+	{
+		// Se existir uma conta
+		return true;
+	}
+	else 
+	{
+		return false;
+	}
+}
+
+stock bool:yeeah_CheckIfPinExists(pin_code[])
+{
+	new query[48 + 10];
+	mysql_format(yeeah__mysqlConnect, query, sizeof(query), "SELECT `id` FROM `users` WHERE `pin_code` = '%e'", pin_code);
+	mysql_query(yeeah__mysqlConnect, query);
+
+	if(cache_num_rows() == 1)
+	{
+		return true;
+	}
+	else 
+	{
+		return false;
+	}	
+}
+
+stock yeeah__GetUserIDbyPin(pin_code[])
+{
+	new query[48 + 10];
+	mysql_format(yeeah__mysqlConnect, query, sizeof(query), "SELECT `id` FROM `users` WHERE `pin_code` = '%e'", pin_code);
+	mysql_query(yeeah__mysqlConnect, query);
+
+	if(cache_num_rows() == 1)
+	{
+		new id = cache_get_field_content_int(0, "id", yeeah__mysqlConnect);
+		return id;
+	}
+	else return -1;
+}
+
+stock bool:yeeah__GetIfUserAlreadyAccount(userid)
+{
+	new query[69];
+	mysql_format(yeeah__mysqlConnect, query, sizeof(query), "SELECT `majesticrpg` FROM `users_services` WHERE `user_id` = '%d'", userid);
+	mysql_query(yeeah__mysqlConnect, query);
+
+	new value;
+	if(cache_num_rows() == 1)
+	{
+		// Se existir um dado
+		value = cache_get_field_content_int(0, "majesticrpg", yeeah__mysqlConnect);
+		if(value == 0) return false;
+		else if(value == 1) return true;
+
+	}
+	return true;
+}

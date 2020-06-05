@@ -1,0 +1,37 @@
+======================== FCNPC Exception Handler ===============================
+Address: 0x00468F04
+
+Registers:
+EAX: 0x00000000 - EBX: 0x053FBA20 - ECX: 0x00000000 - EDX: 0x00000000
+ESI: 0x00000000 - EDI: 0x0 - EBP: 0x0012F948 - ESP: 0x0012F7E8
+
+Stack:
+0x0: 0x00479464 - 0x4: 0x00000000 - 0x8: 0x00000000 - 0xC: 0x053FBA20 - 0x10: 0x0135FF08 - 0x14: 0x00000000
+0x18: 0x0048BC3E - 0x1C: 0x004B493C - 0x20: 0x0012F868
+
+Functions:
+FUNC_CPlayerPool__DeletePlayer: 0x466740
+FUNC_CPlayer__Kill: 0x4831f0
+FUNC_CPlayer__EnterVehicle: 0x483840
+FUNC_CPlayer__ExitVehicle: 0x483960
+FUNC_CPlayer__SpawnForWorld: 0x485900
+FUNC_GetVehicleModelInfo: 0x486e10
+FUNC_CConfig__GetValueAsInteger: 0x488db0
+FUNC_CreateNPC_RPC: 0x48f040
+FUNC_RakServer__Send: 0x45a8e0
+
+
+Pointers:
+VAR_ServerAuthentication: 0x4f6cf0
+VAR_ServerPtr: 0x1599e00
+VAR_ConfigPtr: 0x1591538
+VAR_RakPeerPtr: 0x159db08
+
+Offsets:
+OFFSET_NetVersion: 0xfd9
+OFFSET_RemoteSystemManager: 0x33c
+OFFSET_RemoteSystemSize: 0xcb8
+OFFSET_RemoteSystem__ConnectMode: 0xcb0
+OFFSET_RemoteSystem__Unknown: 0xcb5
+OFFSET_SendBullet_RPC: 0xce
+======================== FCNPC Exception Handler ===============================

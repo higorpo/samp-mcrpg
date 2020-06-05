@@ -1,0 +1,39 @@
+/*                                                            ____      _____  _____    ____
+                                                    |\    /| /      /\  |    \ |    \  /
+                                                    | \  / | |      \/  |      |       |
+                                                    |  \/  | |          |____/ |____/  |  ___
+                                                    |      | |      /\  |    | |       |     |
+                                                    |      | \____  \/  |    | |       \_____/
+                                                                        
+                -----------------------------------------------------------------------------------------------------------------
+                |                                                                                                               |
+                |                                                                                                               |
+                |               Nome: Reconhecimento de players                                                                 |
+                |          Descrição: --                                                                                        |
+                |   Última alteração: 27/05/2016 - 10:16                                                                        |
+                |               Type: function                                                                                  |
+                |                                                                                                               |
+                |                                                                                                               |
+                ---------------------------------------------------------------------------------------------------------------*/
+
+// Livrarias necessarias para o funcionamento geral do script.
+#include "inc\YSI\y_hooks"
+
+
+//------------------------------------------------------------------------------
+
+
+InsertPlayerLog(playerid)
+{
+    new query[128];
+    mysql_format(mysqlConnect, query, sizeof(query), "INSERT INTO `accounts_log_connect` (`id_player`, `ip`, `timestamp`) VALUES ('%d','%e','%d');",
+        // Valores
+        pInfo[playerid][id],
+        GetPlayerIp(playerid),
+        gettime());
+
+    mysql_pquery(mysqlConnect, query);
+    return 1;
+}
+
+// Criar depois função GetPlayerLogs.

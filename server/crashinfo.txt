@@ -1,0 +1,831 @@
+
+--------------------------
+SA-MP Server: 0.3.7-R2
+
+Exception At Address: 0x5D02FB50 Module: (libmysql.dll)
+
+Registers:
+EAX: 0x00000000	EBX: 0x00000000	ECX: 0x024176A0	EDX: 0x00000000
+ESI: 0x00000001	EDI: 0x00000000	EBP: 0x0018F0A8	ESP: 0x0018F044
+EFLAGS: 0x00010246
+
+Stack:
++0000: 0x00000004   0x024176A0   0x5D0EE342   0x024176A0
++0010: 0x024176A0   0x00000000   0x5D023679   0x00000000
++0020: 0x00000000   0x00000000   0x00000000   0x00000000
++0030: 0x00000000   0x00000000   0x00000000   0x00000000
++0040: 0x024176A0   0x00000000   0x0018F09C   0x5D04DB40
++0050: 0x0000001C   0x00000030   0x0018F29C   0x5D02DE1B
++0060: 0xA4EB7083   0x0018F29C   0x5D03317E   0x024176A0
++0070: 0xFFFFFFFF   0x00692DDC   0x006825C0   0x00678040
++0080: 0x02410260   0x00000015   0x000207C8   0x00000001
++0090: 0x02415780   0x00000028   0x0066FC58   0x00000013
++00A0: 0x00000020   0x00640000   0x00000000   0x00692E24
++00B0: 0x00000009   0x00692DF4   0x00020B64   0x00000000
++00C0: 0x0066FEE8   0x0066FC58   0x00000014   0x00000020
++00D0: 0x00000000   0x00020000   0x00000000   0x00692DDC
++00E0: 0x38343535   0x00020B00   0x00020B60   0x77B8DA4C
++00F0: 0x7520BF2E   0x00000018   0x00000000   0x00000000
++0100: 0x00000000   0x0018F178   0x00500016   0x0018F180
++0110: 0x00000030   0x00000000   0x00000000   0x0018F300
++0120: 0x028A2180   0x7520BF3F   0x00000000   0x00000018
++0130: 0x00000028   0x00000000   0x00000000   0x00000028
+
+--------------------------
+
+Loaded Modules:
+samp-server.exe	A: 0x00400000 - 0x00519000	(C:\Users\Higor-\Desktop\Repaginacao\server\samp-server.exe)
+ntdll.dll	A: 0x77B60000 - 0x77CB7000	(C:\Windows\SYSTEM32\ntdll.dll)
+KERNEL32.DLL	A: 0x77960000 - 0x77A90000	(C:\Windows\SYSTEM32\KERNEL32.DLL)
+KERNELBASE.dll	A: 0x75200000 - 0x752A7000	(C:\Windows\SYSTEM32\KERNELBASE.dll)
+SHELL32.dll	A: 0x76660000 - 0x77726000	(C:\Windows\SYSTEM32\SHELL32.dll)
+USER32.dll	A: 0x76540000 - 0x76656000	(C:\Windows\SYSTEM32\USER32.dll)
+WSOCK32.dll	A: 0x5CB40000 - 0x5CB48000	(C:\Windows\SYSTEM32\WSOCK32.dll)
+WINMM.dll	A: 0x74CD0000 - 0x74CF1000	(C:\Windows\SYSTEM32\WINMM.dll)
+msvcrt.dll	A: 0x759C0000 - 0x75A71000	(C:\Windows\SYSTEM32\msvcrt.dll)
+combase.dll	A: 0x763E0000 - 0x76516000	(C:\Windows\SYSTEM32\combase.dll)
+SHLWAPI.dll	A: 0x755A0000 - 0x755E0000	(C:\Windows\SYSTEM32\SHLWAPI.dll)
+GDI32.dll	A: 0x75E50000 - 0x75F4D000	(C:\Windows\SYSTEM32\GDI32.dll)
+WS2_32.dll	A: 0x75690000 - 0x756E0000	(C:\Windows\SYSTEM32\WS2_32.dll)
+WINMMBASE.dll	A: 0x74BB0000 - 0x74BDB000	(C:\Windows\SYSTEM32\WINMMBASE.dll)
+RPCRT4.dll	A: 0x755E0000 - 0x7568C000	(C:\Windows\SYSTEM32\RPCRT4.dll)
+NSI.dll	A: 0x76340000 - 0x76348000	(C:\Windows\SYSTEM32\NSI.dll)
+cfgmgr32.dll	A: 0x75970000 - 0x759B6000	(C:\Windows\SYSTEM32\cfgmgr32.dll)
+DEVOBJ.dll	A: 0x75B10000 - 0x75B2E000	(C:\Windows\SYSTEM32\DEVOBJ.dll)
+SspiCli.dll	A: 0x75150000 - 0x7516D000	(C:\Windows\SYSTEM32\SspiCli.dll)
+CRYPTBASE.dll	A: 0x75140000 - 0x75149000	(C:\Windows\SYSTEM32\CRYPTBASE.dll)
+sechost.dll	A: 0x75F50000 - 0x75F84000	(C:\Windows\SYSTEM32\sechost.dll)
+bcryptPrimitives.dll	A: 0x750E0000 - 0x75131000	(C:\Windows\SYSTEM32\bcryptPrimitives.dll)
+IMM32.DLL	A: 0x75FB0000 - 0x75FD0000	(C:\Windows\system32\IMM32.DLL)
+MSCTF.dll	A: 0x75890000 - 0x7596D000	(C:\Windows\SYSTEM32\MSCTF.dll)
+sscanf.DLL	A: 0x10000000 - 0x1000D000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\sscanf.DLL)
+MSVCR100.dll	A: 0x5D6B0000 - 0x5D76F000	(C:\Users\Higor-\Desktop\Repaginacao\server\MSVCR100.dll)
+CTime.DLL	A: 0x5E490000 - 0x5E4AD000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\CTime.DLL)
+MSVCR100D.dll	A: 0x5D530000 - 0x5D6A2000	(C:\Windows\SYSTEM32\MSVCR100D.dll)
+cuf.DLL	A: 0x5FEE0000 - 0x5FEE6000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\cuf.DLL)
+mysql.DLL	A: 0x5E1E0000 - 0x5E21E000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\mysql.DLL)
+libmysql.dll	A: 0x5D020000 - 0x5D52C000	(C:\Users\Higor-\Desktop\Repaginacao\server\libmysql.dll)
+MSVCR120.dll	A: 0x5CF30000 - 0x5D01E000	(C:\Windows\SYSTEM32\MSVCR120.dll)
+MSVCP120.dll	A: 0x5CEB0000 - 0x5CF21000	(C:\Windows\SYSTEM32\MSVCP120.dll)
+Secur32.dll	A: 0x72D40000 - 0x72D49000	(C:\Windows\SYSTEM32\Secur32.dll)
+ADVAPI32.dll	A: 0x752B0000 - 0x7535E000	(C:\Windows\SYSTEM32\ADVAPI32.dll)
+napinsp.dll	A: 0x71420000 - 0x71430000	(C:\Windows\system32\napinsp.dll)
+pnrpnsp.dll	A: 0x5E5E0000 - 0x5E5F4000	(C:\Windows\system32\pnrpnsp.dll)
+NLAapi.dll	A: 0x71180000 - 0x71190000	(C:\Windows\system32\NLAapi.dll)
+mswsock.dll	A: 0x72C80000 - 0x72CCA000	(C:\Windows\System32\mswsock.dll)
+DNSAPI.dll	A: 0x72300000 - 0x72374000	(C:\Windows\SYSTEM32\DNSAPI.dll)
+winrnr.dll	A: 0x69750000 - 0x69759000	(C:\Windows\System32\winrnr.dll)
+rasadhlp.dll	A: 0x72890000 - 0x72897000	(C:\Windows\System32\rasadhlp.dll)
+streamer.DLL	A: 0x5CE60000 - 0x5CEA4000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\streamer.DLL)
+VERSION.dll	A: 0x74C80000 - 0x74C88000	(C:\Windows\SYSTEM32\VERSION.dll)
+engine.dll	A: 0x28840000 - 0x28A6E000	(C:\Program Files (x86)\YouTube Accelerator\engine.dll)
+WININET.dll	A: 0x777A0000 - 0x77956000	(C:\Windows\SYSTEM32\WININET.dll)
+USERENV.dll	A: 0x75F90000 - 0x75FAB000	(C:\Windows\SYSTEM32\USERENV.dll)
+PSAPI.DLL	A: 0x76350000 - 0x76356000	(C:\Windows\SYSTEM32\PSAPI.DLL)
+iertutil.dll	A: 0x76140000 - 0x7633A000	(C:\Windows\SYSTEM32\iertutil.dll)
+profapi.dll	A: 0x753C0000 - 0x753D1000	(C:\Windows\SYSTEM32\profapi.dll)
+xmldb.dll	A: 0x02A40000 - 0x02A72000	(C:\Program Files (x86)\YouTube Accelerator\xmldb.dll)
+SHCORE.dll	A: 0x74B30000 - 0x74BA3000	(C:\Windows\SYSTEM32\SHCORE.dll)
+ipc.dll	A: 0x03C10000 - 0x03C59000	(C:\Program Files (x86)\YouTube Accelerator\ipc.dll)
+IPHLPAPI.DLL	A: 0x72C40000 - 0x72C60000	(C:\Windows\SYSTEM32\IPHLPAPI.DLL)
+WINNSI.DLL	A: 0x72580000 - 0x72588000	(C:\Windows\SYSTEM32\WINNSI.DLL)
+uxtheme.dll	A: 0x74D00000 - 0x74D88000	(C:\Windows\system32\uxtheme.dll)
+dwmapi.dll	A: 0x74C60000 - 0x74C7A000	(C:\Windows\SYSTEM32\dwmapi.dll)
+helper.dll	A: 0x058A0000 - 0x058D5000	(C:\Program Files (x86)\YouTube Accelerator\helper.dll)
+
+--------------------------
+SA-MP Server: 0.3.7-R2
+
+Exception At Address: 0x5D02FB50 Module: (libmysql.dll)
+
+Registers:
+EAX: 0x00000000	EBX: 0x00000000	ECX: 0x024276A0	EDX: 0x00000000
+ESI: 0x00000001	EDI: 0x00000000	EBP: 0x0018F0A8	ESP: 0x0018F044
+EFLAGS: 0x00010246
+
+Stack:
++0000: 0x00000004   0x024276A0   0x5D0EE342   0x024276A0
++0010: 0x024276A0   0x00000000   0x5D023679   0x00000000
++0020: 0x00000000   0x00000000   0x00000000   0x00000000
++0030: 0x00000000   0x00000000   0x00000000   0x00000000
++0040: 0x024276A0   0x00000000   0x0018F09C   0x5D04DB40
++0050: 0x0000001C   0x00000030   0x0018F29C   0x5D02DE1B
++0060: 0xFFCC1B87   0x0018F29C   0x5D03317E   0x024276A0
++0070: 0xFFFFFFFF   0x002C2DDC   0x002B25C0   0x002A68B8
++0080: 0x02420260   0x00000009   0x000207C8   0x00000001
++0090: 0x02425560   0x00000028   0x0029EC58   0x0000000A
++00A0: 0x00000020   0x00270000   0x00000000   0x002C2E24
++00B0: 0x0000004A   0x002C2DF4   0x00020B64   0x00000000
++00C0: 0x0029F2D0   0x0029EC58   0x0000001E   0x00000020
++00D0: 0x00000000   0x00020000   0x00000000   0x002C2DDC
++00E0: 0x00323936   0x00020B00   0x00020B60   0x77B8DA4C
++00F0: 0x7520BF2E   0x00000018   0x00000000   0x00000000
++0100: 0x00000000   0x0018F178   0x00500016   0x0018F180
++0110: 0x00000030   0x00000000   0x00000000   0x0018F300
++0120: 0x028B2180   0x7520BF3F   0x00000000   0x00000018
++0130: 0x00000028   0x00000000   0x00000000   0x00000028
+
+--------------------------
+
+Loaded Modules:
+samp-server.exe	A: 0x00400000 - 0x00519000	(C:\Users\Higor-\Desktop\Repaginacao\server\samp-server.exe)
+ntdll.dll	A: 0x77B60000 - 0x77CB7000	(C:\Windows\SYSTEM32\ntdll.dll)
+KERNEL32.DLL	A: 0x77960000 - 0x77A90000	(C:\Windows\SYSTEM32\KERNEL32.DLL)
+KERNELBASE.dll	A: 0x75200000 - 0x752A7000	(C:\Windows\SYSTEM32\KERNELBASE.dll)
+SHELL32.dll	A: 0x76660000 - 0x77726000	(C:\Windows\SYSTEM32\SHELL32.dll)
+USER32.dll	A: 0x76540000 - 0x76656000	(C:\Windows\SYSTEM32\USER32.dll)
+WSOCK32.dll	A: 0x5CB40000 - 0x5CB48000	(C:\Windows\SYSTEM32\WSOCK32.dll)
+WINMM.dll	A: 0x74CD0000 - 0x74CF1000	(C:\Windows\SYSTEM32\WINMM.dll)
+msvcrt.dll	A: 0x759C0000 - 0x75A71000	(C:\Windows\SYSTEM32\msvcrt.dll)
+combase.dll	A: 0x763E0000 - 0x76516000	(C:\Windows\SYSTEM32\combase.dll)
+SHLWAPI.dll	A: 0x755A0000 - 0x755E0000	(C:\Windows\SYSTEM32\SHLWAPI.dll)
+GDI32.dll	A: 0x75E50000 - 0x75F4D000	(C:\Windows\SYSTEM32\GDI32.dll)
+WS2_32.dll	A: 0x75690000 - 0x756E0000	(C:\Windows\SYSTEM32\WS2_32.dll)
+WINMMBASE.dll	A: 0x74BB0000 - 0x74BDB000	(C:\Windows\SYSTEM32\WINMMBASE.dll)
+RPCRT4.dll	A: 0x755E0000 - 0x7568C000	(C:\Windows\SYSTEM32\RPCRT4.dll)
+NSI.dll	A: 0x76340000 - 0x76348000	(C:\Windows\SYSTEM32\NSI.dll)
+cfgmgr32.dll	A: 0x75970000 - 0x759B6000	(C:\Windows\SYSTEM32\cfgmgr32.dll)
+DEVOBJ.dll	A: 0x75B10000 - 0x75B2E000	(C:\Windows\SYSTEM32\DEVOBJ.dll)
+SspiCli.dll	A: 0x75150000 - 0x7516D000	(C:\Windows\SYSTEM32\SspiCli.dll)
+CRYPTBASE.dll	A: 0x75140000 - 0x75149000	(C:\Windows\SYSTEM32\CRYPTBASE.dll)
+sechost.dll	A: 0x75F50000 - 0x75F84000	(C:\Windows\SYSTEM32\sechost.dll)
+bcryptPrimitives.dll	A: 0x750E0000 - 0x75131000	(C:\Windows\SYSTEM32\bcryptPrimitives.dll)
+IMM32.DLL	A: 0x75FB0000 - 0x75FD0000	(C:\Windows\system32\IMM32.DLL)
+MSCTF.dll	A: 0x75890000 - 0x7596D000	(C:\Windows\SYSTEM32\MSCTF.dll)
+sscanf.DLL	A: 0x10000000 - 0x1000D000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\sscanf.DLL)
+MSVCR100.dll	A: 0x5D6B0000 - 0x5D76F000	(C:\Users\Higor-\Desktop\Repaginacao\server\MSVCR100.dll)
+CTime.DLL	A: 0x5E490000 - 0x5E4AD000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\CTime.DLL)
+MSVCR100D.dll	A: 0x5D530000 - 0x5D6A2000	(C:\Windows\SYSTEM32\MSVCR100D.dll)
+cuf.DLL	A: 0x5FEE0000 - 0x5FEE6000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\cuf.DLL)
+mysql.DLL	A: 0x5E1E0000 - 0x5E21E000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\mysql.DLL)
+libmysql.dll	A: 0x5D020000 - 0x5D52C000	(C:\Users\Higor-\Desktop\Repaginacao\server\libmysql.dll)
+MSVCR120.dll	A: 0x5CF30000 - 0x5D01E000	(C:\Windows\SYSTEM32\MSVCR120.dll)
+MSVCP120.dll	A: 0x5CEB0000 - 0x5CF21000	(C:\Windows\SYSTEM32\MSVCP120.dll)
+Secur32.dll	A: 0x72D40000 - 0x72D49000	(C:\Windows\SYSTEM32\Secur32.dll)
+ADVAPI32.dll	A: 0x752B0000 - 0x7535E000	(C:\Windows\SYSTEM32\ADVAPI32.dll)
+napinsp.dll	A: 0x71420000 - 0x71430000	(C:\Windows\system32\napinsp.dll)
+pnrpnsp.dll	A: 0x5E5E0000 - 0x5E5F4000	(C:\Windows\system32\pnrpnsp.dll)
+NLAapi.dll	A: 0x71180000 - 0x71190000	(C:\Windows\system32\NLAapi.dll)
+mswsock.dll	A: 0x72C80000 - 0x72CCA000	(C:\Windows\System32\mswsock.dll)
+DNSAPI.dll	A: 0x72300000 - 0x72374000	(C:\Windows\SYSTEM32\DNSAPI.dll)
+winrnr.dll	A: 0x69750000 - 0x69759000	(C:\Windows\System32\winrnr.dll)
+rasadhlp.dll	A: 0x72890000 - 0x72897000	(C:\Windows\System32\rasadhlp.dll)
+streamer.DLL	A: 0x5CE60000 - 0x5CEA4000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\streamer.DLL)
+VERSION.dll	A: 0x74C80000 - 0x74C88000	(C:\Windows\SYSTEM32\VERSION.dll)
+engine.dll	A: 0x28840000 - 0x28A6E000	(C:\Program Files (x86)\YouTube Accelerator\engine.dll)
+WININET.dll	A: 0x777A0000 - 0x77956000	(C:\Windows\SYSTEM32\WININET.dll)
+USERENV.dll	A: 0x75F90000 - 0x75FAB000	(C:\Windows\SYSTEM32\USERENV.dll)
+PSAPI.DLL	A: 0x76350000 - 0x76356000	(C:\Windows\SYSTEM32\PSAPI.DLL)
+iertutil.dll	A: 0x76140000 - 0x7633A000	(C:\Windows\SYSTEM32\iertutil.dll)
+profapi.dll	A: 0x753C0000 - 0x753D1000	(C:\Windows\SYSTEM32\profapi.dll)
+xmldb.dll	A: 0x023E0000 - 0x02412000	(C:\Program Files (x86)\YouTube Accelerator\xmldb.dll)
+SHCORE.dll	A: 0x74B30000 - 0x74BA3000	(C:\Windows\SYSTEM32\SHCORE.dll)
+ipc.dll	A: 0x03BE0000 - 0x03C29000	(C:\Program Files (x86)\YouTube Accelerator\ipc.dll)
+IPHLPAPI.DLL	A: 0x72C40000 - 0x72C60000	(C:\Windows\SYSTEM32\IPHLPAPI.DLL)
+WINNSI.DLL	A: 0x72580000 - 0x72588000	(C:\Windows\SYSTEM32\WINNSI.DLL)
+uxtheme.dll	A: 0x74D00000 - 0x74D88000	(C:\Windows\system32\uxtheme.dll)
+dwmapi.dll	A: 0x74C60000 - 0x74C7A000	(C:\Windows\SYSTEM32\dwmapi.dll)
+helper.dll	A: 0x05880000 - 0x058B5000	(C:\Program Files (x86)\YouTube Accelerator\helper.dll)
+
+--------------------------
+SA-MP Server: 0.3.7-R2
+
+Exception At Address: 0x66892CB9 Module: (CTime.DLL)
+
+Registers:
+EAX: 0x05E63CD8	EBX: 0xA434DBED	ECX: 0x00000000	EDX: 0x00000000
+ESI: 0x05C69D6C	EDI: 0x0018F284	EBP: 0x0018F284	ESP: 0x0018F1AC
+EFLAGS: 0x00010216
+
+Stack:
++0000: 0x0018F388   0x05C69D6C   0xA434DBED   0xCCCCCCCC
++0010: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++0020: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++0030: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++0040: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++0050: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++0060: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++0070: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++0080: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++0090: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++00A0: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++00B0: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++00C0: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++00D0: 0x00301038   0xCCCCCCCC   0x0018F388   0x668936DB
++00E0: 0x05E63CD8   0x00000000   0x02742180   0x05C69D6C
++00F0: 0xA434DBED   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++0100: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++0110: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++0120: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++0130: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
+
+--------------------------
+
+Loaded Modules:
+samp-server.exe	A: 0x00400000 - 0x00519000	(C:\Users\Higor-\Desktop\Repaginacao\server\samp-server.exe)
+ntdll.dll	A: 0x76F50000 - 0x770A7000	(C:\Windows\SYSTEM32\ntdll.dll)
+KERNEL32.DLL	A: 0x75060000 - 0x75190000	(C:\Windows\SYSTEM32\KERNEL32.DLL)
+KERNELBASE.dll	A: 0x745C0000 - 0x74667000	(C:\Windows\SYSTEM32\KERNELBASE.dll)
+SHELL32.dll	A: 0x75CE0000 - 0x76DA6000	(C:\Windows\SYSTEM32\SHELL32.dll)
+USER32.dll	A: 0x749B0000 - 0x74AC6000	(C:\Windows\SYSTEM32\USER32.dll)
+WSOCK32.dll	A: 0x668A0000 - 0x668A8000	(C:\Windows\SYSTEM32\WSOCK32.dll)
+WINMM.dll	A: 0x740C0000 - 0x740E1000	(C:\Windows\SYSTEM32\WINMM.dll)
+msvcrt.dll	A: 0x74AD0000 - 0x74B81000	(C:\Windows\SYSTEM32\msvcrt.dll)
+combase.dll	A: 0x75190000 - 0x752C6000	(C:\Windows\SYSTEM32\combase.dll)
+SHLWAPI.dll	A: 0x75C60000 - 0x75CA0000	(C:\Windows\SYSTEM32\SHLWAPI.dll)
+GDI32.dll	A: 0x74D80000 - 0x74E7D000	(C:\Windows\SYSTEM32\GDI32.dll)
+WS2_32.dll	A: 0x74D30000 - 0x74D80000	(C:\Windows\SYSTEM32\WS2_32.dll)
+WINMMBASE.dll	A: 0x73FA0000 - 0x73FCB000	(C:\Windows\SYSTEM32\WINMMBASE.dll)
+RPCRT4.dll	A: 0x74900000 - 0x749AC000	(C:\Windows\SYSTEM32\RPCRT4.dll)
+NSI.dll	A: 0x74560000 - 0x74568000	(C:\Windows\SYSTEM32\NSI.dll)
+cfgmgr32.dll	A: 0x74830000 - 0x74876000	(C:\Windows\SYSTEM32\cfgmgr32.dll)
+DEVOBJ.dll	A: 0x75480000 - 0x7549E000	(C:\Windows\SYSTEM32\DEVOBJ.dll)
+SspiCli.dll	A: 0x74540000 - 0x7455D000	(C:\Windows\SYSTEM32\SspiCli.dll)
+CRYPTBASE.dll	A: 0x74530000 - 0x74539000	(C:\Windows\SYSTEM32\CRYPTBASE.dll)
+sechost.dll	A: 0x754E0000 - 0x75514000	(C:\Windows\SYSTEM32\sechost.dll)
+bcryptPrimitives.dll	A: 0x744D0000 - 0x74521000	(C:\Windows\SYSTEM32\bcryptPrimitives.dll)
+IMM32.DLL	A: 0x75030000 - 0x75050000	(C:\Windows\system32\IMM32.DLL)
+MSCTF.dll	A: 0x76DB0000 - 0x76E8D000	(C:\Windows\SYSTEM32\MSCTF.dll)
+sscanf.DLL	A: 0x10000000 - 0x1000D000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\sscanf.DLL)
+MSVCR100.dll	A: 0x60C50000 - 0x60D0F000	(C:\Users\Higor-\Desktop\Repaginacao\server\MSVCR100.dll)
+CTime.DLL	A: 0x66880000 - 0x6689D000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\CTime.DLL)
+MSVCR100D.dll	A: 0x5D960000 - 0x5DAD2000	(C:\Windows\SYSTEM32\MSVCR100D.dll)
+cuf.DLL	A: 0x60C40000 - 0x60C46000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\cuf.DLL)
+mysql.DLL	A: 0x5D920000 - 0x5D95E000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\mysql.DLL)
+libmysql.dll	A: 0x5D410000 - 0x5D91C000	(C:\Users\Higor-\Desktop\Repaginacao\server\libmysql.dll)
+MSVCR120.dll	A: 0x5D320000 - 0x5D40E000	(C:\Windows\SYSTEM32\MSVCR120.dll)
+MSVCP120.dll	A: 0x5D2A0000 - 0x5D311000	(C:\Windows\SYSTEM32\MSVCP120.dll)
+Secur32.dll	A: 0x706D0000 - 0x706D9000	(C:\Windows\SYSTEM32\Secur32.dll)
+ADVAPI32.dll	A: 0x74BF0000 - 0x74C9E000	(C:\Windows\SYSTEM32\ADVAPI32.dll)
+napinsp.dll	A: 0x6FD50000 - 0x6FD60000	(C:\Windows\system32\napinsp.dll)
+pnrpnsp.dll	A: 0x668F0000 - 0x66904000	(C:\Windows\system32\pnrpnsp.dll)
+NLAapi.dll	A: 0x6B360000 - 0x6B370000	(C:\Windows\system32\NLAapi.dll)
+mswsock.dll	A: 0x70D60000 - 0x70DAA000	(C:\Windows\System32\mswsock.dll)
+DNSAPI.dll	A: 0x71690000 - 0x71704000	(C:\Windows\SYSTEM32\DNSAPI.dll)
+winrnr.dll	A: 0x6B290000 - 0x6B299000	(C:\Windows\System32\winrnr.dll)
+rasadhlp.dll	A: 0x71AB0000 - 0x71AB7000	(C:\Windows\System32\rasadhlp.dll)
+streamer.DLL	A: 0x5D250000 - 0x5D294000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\streamer.DLL)
+VERSION.dll	A: 0x74070000 - 0x74078000	(C:\Windows\SYSTEM32\VERSION.dll)
+engine.dll	A: 0x28840000 - 0x28A6E000	(C:\Program Files (x86)\YouTube Accelerator\engine.dll)
+WININET.dll	A: 0x74670000 - 0x74826000	(C:\Windows\SYSTEM32\WININET.dll)
+USERENV.dll	A: 0x75CC0000 - 0x75CDB000	(C:\Windows\SYSTEM32\USERENV.dll)
+PSAPI.DLL	A: 0x759A0000 - 0x759A6000	(C:\Windows\SYSTEM32\PSAPI.DLL)
+iertutil.dll	A: 0x75520000 - 0x7571A000	(C:\Windows\SYSTEM32\iertutil.dll)
+profapi.dll	A: 0x754A0000 - 0x754B1000	(C:\Windows\SYSTEM32\profapi.dll)
+xmldb.dll	A: 0x03150000 - 0x03182000	(C:\Program Files (x86)\YouTube Accelerator\xmldb.dll)
+SHCORE.dll	A: 0x73F20000 - 0x73F93000	(C:\Windows\SYSTEM32\SHCORE.dll)
+ipc.dll	A: 0x03250000 - 0x03299000	(C:\Program Files (x86)\YouTube Accelerator\ipc.dll)
+IPHLPAPI.DLL	A: 0x720E0000 - 0x72100000	(C:\Windows\SYSTEM32\IPHLPAPI.DLL)
+WINNSI.DLL	A: 0x71970000 - 0x71978000	(C:\Windows\SYSTEM32\WINNSI.DLL)
+uxtheme.dll	A: 0x740F0000 - 0x74178000	(C:\Windows\system32\uxtheme.dll)
+dwmapi.dll	A: 0x74050000 - 0x7406A000	(C:\Windows\SYSTEM32\dwmapi.dll)
+helper.dll	A: 0x058B0000 - 0x058E5000	(C:\Program Files (x86)\YouTube Accelerator\helper.dll)
+
+--------------------------
+SA-MP Server: 0.3.7-R2
+
+Exception At Address: 0x66892CB9 Module: (CTime.DLL)
+
+Registers:
+EAX: 0x05152344	EBX: 0xA8724E12	ECX: 0x00000000	EDX: 0x00000000
+ESI: 0x04F580B4	EDI: 0x0018F284	EBP: 0x0018F284	ESP: 0x0018F1AC
+EFLAGS: 0x00010216
+
+Stack:
++0000: 0x0018F388   0x04F580B4   0xA8724E12   0xCCCCCCCC
++0010: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++0020: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++0030: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++0040: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++0050: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++0060: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++0070: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++0080: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++0090: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++00A0: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++00B0: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++00C0: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++00D0: 0x022E1038   0xCCCCCCCC   0x0018F388   0x668936DB
++00E0: 0x05152344   0x00000000   0x02882180   0x04F580B4
++00F0: 0xA8724E12   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++0100: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++0110: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++0120: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
++0130: 0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC   0xCCCCCCCC
+
+--------------------------
+
+Loaded Modules:
+samp-server.exe	A: 0x00400000 - 0x00519000	(C:\Users\Higor-\Desktop\Repaginacao\server\samp-server.exe)
+ntdll.dll	A: 0x76F50000 - 0x770A7000	(C:\Windows\SYSTEM32\ntdll.dll)
+KERNEL32.DLL	A: 0x75060000 - 0x75190000	(C:\Windows\SYSTEM32\KERNEL32.DLL)
+KERNELBASE.dll	A: 0x745C0000 - 0x74667000	(C:\Windows\SYSTEM32\KERNELBASE.dll)
+SHELL32.dll	A: 0x75CE0000 - 0x76DA6000	(C:\Windows\SYSTEM32\SHELL32.dll)
+USER32.dll	A: 0x749B0000 - 0x74AC6000	(C:\Windows\SYSTEM32\USER32.dll)
+WSOCK32.dll	A: 0x668A0000 - 0x668A8000	(C:\Windows\SYSTEM32\WSOCK32.dll)
+WINMM.dll	A: 0x740C0000 - 0x740E1000	(C:\Windows\SYSTEM32\WINMM.dll)
+msvcrt.dll	A: 0x74AD0000 - 0x74B81000	(C:\Windows\SYSTEM32\msvcrt.dll)
+combase.dll	A: 0x75190000 - 0x752C6000	(C:\Windows\SYSTEM32\combase.dll)
+SHLWAPI.dll	A: 0x75C60000 - 0x75CA0000	(C:\Windows\SYSTEM32\SHLWAPI.dll)
+GDI32.dll	A: 0x74D80000 - 0x74E7D000	(C:\Windows\SYSTEM32\GDI32.dll)
+WS2_32.dll	A: 0x74D30000 - 0x74D80000	(C:\Windows\SYSTEM32\WS2_32.dll)
+WINMMBASE.dll	A: 0x73FA0000 - 0x73FCB000	(C:\Windows\SYSTEM32\WINMMBASE.dll)
+RPCRT4.dll	A: 0x74900000 - 0x749AC000	(C:\Windows\SYSTEM32\RPCRT4.dll)
+NSI.dll	A: 0x74560000 - 0x74568000	(C:\Windows\SYSTEM32\NSI.dll)
+cfgmgr32.dll	A: 0x74830000 - 0x74876000	(C:\Windows\SYSTEM32\cfgmgr32.dll)
+DEVOBJ.dll	A: 0x75480000 - 0x7549E000	(C:\Windows\SYSTEM32\DEVOBJ.dll)
+SspiCli.dll	A: 0x74540000 - 0x7455D000	(C:\Windows\SYSTEM32\SspiCli.dll)
+CRYPTBASE.dll	A: 0x74530000 - 0x74539000	(C:\Windows\SYSTEM32\CRYPTBASE.dll)
+sechost.dll	A: 0x754E0000 - 0x75514000	(C:\Windows\SYSTEM32\sechost.dll)
+bcryptPrimitives.dll	A: 0x744D0000 - 0x74521000	(C:\Windows\SYSTEM32\bcryptPrimitives.dll)
+IMM32.DLL	A: 0x75030000 - 0x75050000	(C:\Windows\system32\IMM32.DLL)
+MSCTF.dll	A: 0x76DB0000 - 0x76E8D000	(C:\Windows\SYSTEM32\MSCTF.dll)
+sscanf.DLL	A: 0x10000000 - 0x1000D000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\sscanf.DLL)
+MSVCR100.dll	A: 0x60C50000 - 0x60D0F000	(C:\Users\Higor-\Desktop\Repaginacao\server\MSVCR100.dll)
+CTime.DLL	A: 0x66880000 - 0x6689D000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\CTime.DLL)
+MSVCR100D.dll	A: 0x5D960000 - 0x5DAD2000	(C:\Windows\SYSTEM32\MSVCR100D.dll)
+cuf.DLL	A: 0x60C40000 - 0x60C46000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\cuf.DLL)
+mysql.DLL	A: 0x5D920000 - 0x5D95E000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\mysql.DLL)
+libmysql.dll	A: 0x5D410000 - 0x5D91C000	(C:\Users\Higor-\Desktop\Repaginacao\server\libmysql.dll)
+MSVCR120.dll	A: 0x5D320000 - 0x5D40E000	(C:\Windows\SYSTEM32\MSVCR120.dll)
+MSVCP120.dll	A: 0x5D2A0000 - 0x5D311000	(C:\Windows\SYSTEM32\MSVCP120.dll)
+Secur32.dll	A: 0x706D0000 - 0x706D9000	(C:\Windows\SYSTEM32\Secur32.dll)
+ADVAPI32.dll	A: 0x74BF0000 - 0x74C9E000	(C:\Windows\SYSTEM32\ADVAPI32.dll)
+napinsp.dll	A: 0x6FE40000 - 0x6FE50000	(C:\Windows\system32\napinsp.dll)
+pnrpnsp.dll	A: 0x699C0000 - 0x699D4000	(C:\Windows\system32\pnrpnsp.dll)
+NLAapi.dll	A: 0x6FD50000 - 0x6FD60000	(C:\Windows\system32\NLAapi.dll)
+mswsock.dll	A: 0x70D60000 - 0x70DAA000	(C:\Windows\System32\mswsock.dll)
+DNSAPI.dll	A: 0x71690000 - 0x71704000	(C:\Windows\SYSTEM32\DNSAPI.dll)
+winrnr.dll	A: 0x6B360000 - 0x6B369000	(C:\Windows\System32\winrnr.dll)
+rasadhlp.dll	A: 0x71AB0000 - 0x71AB7000	(C:\Windows\System32\rasadhlp.dll)
+streamer.DLL	A: 0x5D250000 - 0x5D294000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\streamer.DLL)
+VERSION.dll	A: 0x74070000 - 0x74078000	(C:\Windows\SYSTEM32\VERSION.dll)
+engine.dll	A: 0x28840000 - 0x28A6E000	(C:\Program Files (x86)\YouTube Accelerator\engine.dll)
+WININET.dll	A: 0x74670000 - 0x74826000	(C:\Windows\SYSTEM32\WININET.dll)
+USERENV.dll	A: 0x75CC0000 - 0x75CDB000	(C:\Windows\SYSTEM32\USERENV.dll)
+PSAPI.DLL	A: 0x759A0000 - 0x759A6000	(C:\Windows\SYSTEM32\PSAPI.DLL)
+iertutil.dll	A: 0x75520000 - 0x7571A000	(C:\Windows\SYSTEM32\iertutil.dll)
+profapi.dll	A: 0x754A0000 - 0x754B1000	(C:\Windows\SYSTEM32\profapi.dll)
+xmldb.dll	A: 0x02A20000 - 0x02A52000	(C:\Program Files (x86)\YouTube Accelerator\xmldb.dll)
+SHCORE.dll	A: 0x73F20000 - 0x73F93000	(C:\Windows\SYSTEM32\SHCORE.dll)
+ipc.dll	A: 0x03350000 - 0x03399000	(C:\Program Files (x86)\YouTube Accelerator\ipc.dll)
+IPHLPAPI.DLL	A: 0x720E0000 - 0x72100000	(C:\Windows\SYSTEM32\IPHLPAPI.DLL)
+WINNSI.DLL	A: 0x71970000 - 0x71978000	(C:\Windows\SYSTEM32\WINNSI.DLL)
+uxtheme.dll	A: 0x740F0000 - 0x74178000	(C:\Windows\system32\uxtheme.dll)
+dwmapi.dll	A: 0x74050000 - 0x7406A000	(C:\Windows\SYSTEM32\dwmapi.dll)
+helper.dll	A: 0x05870000 - 0x058A5000	(C:\Program Files (x86)\YouTube Accelerator\helper.dll)
+
+--------------------------
+SA-MP Server: 0.3.7-R2
+
+Exception At Address: 0x77A13442 Module: (ntdll.dll)
+
+Registers:
+EAX: 0x00000024	EBX: 0x00000080	ECX: 0x00000020	EDX: 0x7FFDD000
+ESI: 0x0611B6D0	EDI: 0x0611B708	EBP: 0x0018FBC4	ESP: 0x0018FBC4
+EFLAGS: 0x00010202
+
+Stack:
++0000: 0x0018FC04   0x00498BB8   0x00000020   0x0049F510
++0010: 0x00000000   0x0611B708   0x0611B6D0   0x00000080
++0020: 0x616E6967   0x5C6F6163   0x0018FBD8   0x0018F604
++0030: 0x0018FE14   0x0049D208   0x004BA7F0   0xFFFFFFFF
++0040: 0x00000080   0x004991E0   0x00000000   0x00404F14
++0050: 0x00000000   0x0018FC30   0x0611B6D0   0x00000080
++0060: 0x0018FCD8   0x002E74DA   0x00000001   0x0028A468
++0070: 0x82310651   0x00405802   0x00000000   0x00000080
++0080: 0x00000001   0x5FA2E2F0   0x5FA2E2CC   0x00000001
++0090: 0x0018FCC0   0x0018FC84   0x82310609   0x0000000A
++00A0: 0x0018FCC0   0x5FA11CEB   0x00000000   0x00000000
++00B0: 0xFFFFFFFF   0x00000004   0x00000FEC   0x05D0EBBC
++00C0: 0x0046F992   0x004F4F93   0x00000FFF   0x060B0CE4
++00D0: 0x022C2180   0x0611B910   0x0018FCBC   0x022C2180
++00E0: 0x0038E2FC   0x022C2180   0x0611B910   0x022C2180
++00F0: 0x0611B910   0x004057A0   0x022C2180   0x003F8D5C
++0100: 0x004057B0   0x022C2180   0x022C2180   0x05CD55C0
++0110: 0x00000087   0x05D0D9A8   0x004010B6   0x022C2180
++0120: 0x0611B708   0x05D229AC   0x00402B63   0x022C2180
++0130: 0x0000009A   0x0018FD10   0x0611B6D0   0x0018FD5C
+
+--------------------------
+
+Loaded Modules:
+samp-server.exe	A: 0x00400000 - 0x00519000	(C:\Users\Higor-\Desktop\Repaginacao\server\samp-server.exe)
+ntdll.dll	A: 0x779D0000 - 0x77B27000	(C:\Windows\SYSTEM32\ntdll.dll)
+KERNEL32.DLL	A: 0x76C90000 - 0x76DC0000	(C:\Windows\SYSTEM32\KERNEL32.DLL)
+KERNELBASE.dll	A: 0x76BC0000 - 0x76C67000	(C:\Windows\SYSTEM32\KERNELBASE.dll)
+SHELL32.dll	A: 0x75550000 - 0x76616000	(C:\Windows\SYSTEM32\SHELL32.dll)
+USER32.dll	A: 0x76DD0000 - 0x76EE6000	(C:\Windows\SYSTEM32\USER32.dll)
+WSOCK32.dll	A: 0x66590000 - 0x66598000	(C:\Windows\SYSTEM32\WSOCK32.dll)
+WINMM.dll	A: 0x74B40000 - 0x74B61000	(C:\Windows\SYSTEM32\WINMM.dll)
+msvcrt.dll	A: 0x75490000 - 0x75541000	(C:\Windows\SYSTEM32\msvcrt.dll)
+combase.dll	A: 0x76A60000 - 0x76B96000	(C:\Windows\SYSTEM32\combase.dll)
+SHLWAPI.dll	A: 0x75150000 - 0x75190000	(C:\Windows\SYSTEM32\SHLWAPI.dll)
+GDI32.dll	A: 0x75390000 - 0x7548D000	(C:\Windows\SYSTEM32\GDI32.dll)
+WS2_32.dll	A: 0x775F0000 - 0x77640000	(C:\Windows\SYSTEM32\WS2_32.dll)
+WINMMBASE.dll	A: 0x74A20000 - 0x74A4B000	(C:\Windows\SYSTEM32\WINMMBASE.dll)
+RPCRT4.dll	A: 0x752E0000 - 0x7538C000	(C:\Windows\SYSTEM32\RPCRT4.dll)
+NSI.dll	A: 0x76740000 - 0x76748000	(C:\Windows\SYSTEM32\NSI.dll)
+cfgmgr32.dll	A: 0x774C0000 - 0x77506000	(C:\Windows\SYSTEM32\cfgmgr32.dll)
+DEVOBJ.dll	A: 0x76C70000 - 0x76C8E000	(C:\Windows\SYSTEM32\DEVOBJ.dll)
+SspiCli.dll	A: 0x74FC0000 - 0x74FDD000	(C:\Windows\SYSTEM32\SspiCli.dll)
+CRYPTBASE.dll	A: 0x74FB0000 - 0x74FB9000	(C:\Windows\SYSTEM32\CRYPTBASE.dll)
+sechost.dll	A: 0x77260000 - 0x77294000	(C:\Windows\SYSTEM32\sechost.dll)
+bcryptPrimitives.dll	A: 0x74F50000 - 0x74FA1000	(C:\Windows\SYSTEM32\bcryptPrimitives.dll)
+IMM32.DLL	A: 0x76990000 - 0x769B0000	(C:\Windows\system32\IMM32.DLL)
+MSCTF.dll	A: 0x77510000 - 0x775ED000	(C:\Windows\SYSTEM32\MSCTF.dll)
+sscanf.DLL	A: 0x10000000 - 0x1000D000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\sscanf.DLL)
+MSVCR100.dll	A: 0x65600000 - 0x656BF000	(C:\Users\Higor-\Desktop\Repaginacao\server\MSVCR100.dll)
+CTime.DLL	A: 0x5FA40000 - 0x5FA5D000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\CTime.DLL)
+MSVCR100D.dll	A: 0x5DB00000 - 0x5DC72000	(C:\Windows\SYSTEM32\MSVCR100D.dll)
+cuf.DLL	A: 0x65DF0000 - 0x65DF6000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\cuf.DLL)
+mysql.DLL	A: 0x5FA00000 - 0x5FA3E000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\mysql.DLL)
+libmysql.dll	A: 0x56310000 - 0x5681C000	(C:\Users\Higor-\Desktop\Repaginacao\server\libmysql.dll)
+MSVCR120.dll	A: 0x5D820000 - 0x5D90E000	(C:\Windows\SYSTEM32\MSVCR120.dll)
+MSVCP120.dll	A: 0x5DA80000 - 0x5DAF1000	(C:\Windows\SYSTEM32\MSVCP120.dll)
+Secur32.dll	A: 0x71FD0000 - 0x71FD9000	(C:\Windows\SYSTEM32\Secur32.dll)
+ADVAPI32.dll	A: 0x76750000 - 0x767FE000	(C:\Windows\SYSTEM32\ADVAPI32.dll)
+napinsp.dll	A: 0x71010000 - 0x71020000	(C:\Windows\system32\napinsp.dll)
+pnrpnsp.dll	A: 0x6AAC0000 - 0x6AAD4000	(C:\Windows\system32\pnrpnsp.dll)
+NLAapi.dll	A: 0x6AAB0000 - 0x6AAC0000	(C:\Windows\system32\NLAapi.dll)
+mswsock.dll	A: 0x71F80000 - 0x71FCA000	(C:\Windows\System32\mswsock.dll)
+DNSAPI.dll	A: 0x72400000 - 0x72474000	(C:\Windows\SYSTEM32\DNSAPI.dll)
+winrnr.dll	A: 0x6AAA0000 - 0x6AAA9000	(C:\Windows\System32\winrnr.dll)
+rasadhlp.dll	A: 0x71DB0000 - 0x71DB7000	(C:\Windows\System32\rasadhlp.dll)
+streamer.DLL	A: 0x5D7D0000 - 0x5D814000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\streamer.DLL)
+VERSION.dll	A: 0x74AF0000 - 0x74AF8000	(C:\Windows\SYSTEM32\VERSION.dll)
+engine.dll	A: 0x28840000 - 0x28A6E000	(C:\Program Files (x86)\YouTube Accelerator\engine.dll)
+WININET.dll	A: 0x770A0000 - 0x77256000	(C:\Windows\SYSTEM32\WININET.dll)
+USERENV.dll	A: 0x76BA0000 - 0x76BBB000	(C:\Windows\SYSTEM32\USERENV.dll)
+PSAPI.DLL	A: 0x77900000 - 0x77906000	(C:\Windows\SYSTEM32\PSAPI.DLL)
+iertutil.dll	A: 0x77650000 - 0x7784A000	(C:\Windows\SYSTEM32\iertutil.dll)
+profapi.dll	A: 0x77850000 - 0x77861000	(C:\Windows\SYSTEM32\profapi.dll)
+xmldb.dll	A: 0x02A20000 - 0x02A52000	(C:\Program Files (x86)\YouTube Accelerator\xmldb.dll)
+SHCORE.dll	A: 0x749A0000 - 0x74A13000	(C:\Windows\SYSTEM32\SHCORE.dll)
+ipc.dll	A: 0x03250000 - 0x03299000	(C:\Program Files (x86)\YouTube Accelerator\ipc.dll)
+IPHLPAPI.DLL	A: 0x72BD0000 - 0x72BF0000	(C:\Windows\SYSTEM32\IPHLPAPI.DLL)
+WINNSI.DLL	A: 0x723F0000 - 0x723F8000	(C:\Windows\SYSTEM32\WINNSI.DLL)
+uxtheme.dll	A: 0x74B70000 - 0x74BF8000	(C:\Windows\system32\uxtheme.dll)
+dwmapi.dll	A: 0x74AD0000 - 0x74AEA000	(C:\Windows\SYSTEM32\dwmapi.dll)
+helper.dll	A: 0x050D0000 - 0x05105000	(C:\Program Files (x86)\YouTube Accelerator\helper.dll)
+
+--------------------------
+SA-MP Server: 0.3.7-R2
+
+Exception At Address: 0x77A13442 Module: (ntdll.dll)
+
+Registers:
+EAX: 0x00000024	EBX: 0x00000080	ECX: 0x00000020	EDX: 0x7FFDD000
+ESI: 0x060986D0	EDI: 0x06098708	EBP: 0x0018FBC4	ESP: 0x0018FBC4
+EFLAGS: 0x00010202
+
+Stack:
++0000: 0x0018FC04   0x00498BB8   0x00000020   0x0049F510
++0010: 0x00000000   0x06098708   0x060986D0   0x00000080
++0020: 0x616E6967   0x5C6F6163   0x0018FBD8   0x0018F604
++0030: 0x0018FE14   0x0049D208   0x004BA7F0   0xFFFFFFFF
++0040: 0x00000080   0x004991E0   0x00000000   0x00404F14
++0050: 0x00000000   0x0018FC30   0x060986D0   0x00000080
++0060: 0x0018FCD8   0x002F73B2   0x00000001   0x002AAC90
++0070: 0xDA3D918B   0x00405802   0x00000000   0x00000080
++0080: 0x00000001   0x5FA2E2F0   0x5FA2E2CC   0x00000001
++0090: 0x0018FCC0   0x0018FC84   0xDA3D91D3   0x0000000A
++00A0: 0x0018FCC0   0x5FA11CEB   0x00000000   0x00000000
++00B0: 0xFFFFFFFF   0x00000004   0x00000FEC   0x05C8BBBC
++00C0: 0x0046F992   0x004F4F93   0x00000FFF   0x0602DCE4
++00D0: 0x02402180   0x06098910   0x0018FCBC   0x02402180
++00E0: 0x0038E2FC   0x02402180   0x06098910   0x02402180
++00F0: 0x06098910   0x004057A0   0x02402180   0x003F8D5C
++0100: 0x004057B0   0x02402180   0x02402180   0x05C525C0
++0110: 0x00000087   0x05C8A9A8   0x004010B6   0x02402180
++0120: 0x06098708   0x05C9F9AC   0x00402B63   0x02402180
++0130: 0x0000009A   0x0018FD10   0x060986D0   0x0018FD5C
+
+--------------------------
+
+Loaded Modules:
+samp-server.exe	A: 0x00400000 - 0x00519000	(C:\Users\Higor-\Desktop\Repaginacao\server\samp-server.exe)
+ntdll.dll	A: 0x779D0000 - 0x77B27000	(C:\Windows\SYSTEM32\ntdll.dll)
+KERNEL32.DLL	A: 0x76C90000 - 0x76DC0000	(C:\Windows\SYSTEM32\KERNEL32.DLL)
+KERNELBASE.dll	A: 0x76BC0000 - 0x76C67000	(C:\Windows\SYSTEM32\KERNELBASE.dll)
+SHELL32.dll	A: 0x75550000 - 0x76616000	(C:\Windows\SYSTEM32\SHELL32.dll)
+USER32.dll	A: 0x76DD0000 - 0x76EE6000	(C:\Windows\SYSTEM32\USER32.dll)
+WSOCK32.dll	A: 0x66590000 - 0x66598000	(C:\Windows\SYSTEM32\WSOCK32.dll)
+WINMM.dll	A: 0x74B40000 - 0x74B61000	(C:\Windows\SYSTEM32\WINMM.dll)
+msvcrt.dll	A: 0x75490000 - 0x75541000	(C:\Windows\SYSTEM32\msvcrt.dll)
+combase.dll	A: 0x76A60000 - 0x76B96000	(C:\Windows\SYSTEM32\combase.dll)
+SHLWAPI.dll	A: 0x75150000 - 0x75190000	(C:\Windows\SYSTEM32\SHLWAPI.dll)
+GDI32.dll	A: 0x75390000 - 0x7548D000	(C:\Windows\SYSTEM32\GDI32.dll)
+WS2_32.dll	A: 0x775F0000 - 0x77640000	(C:\Windows\SYSTEM32\WS2_32.dll)
+WINMMBASE.dll	A: 0x74A20000 - 0x74A4B000	(C:\Windows\SYSTEM32\WINMMBASE.dll)
+RPCRT4.dll	A: 0x752E0000 - 0x7538C000	(C:\Windows\SYSTEM32\RPCRT4.dll)
+NSI.dll	A: 0x76740000 - 0x76748000	(C:\Windows\SYSTEM32\NSI.dll)
+cfgmgr32.dll	A: 0x774C0000 - 0x77506000	(C:\Windows\SYSTEM32\cfgmgr32.dll)
+DEVOBJ.dll	A: 0x76C70000 - 0x76C8E000	(C:\Windows\SYSTEM32\DEVOBJ.dll)
+SspiCli.dll	A: 0x74FC0000 - 0x74FDD000	(C:\Windows\SYSTEM32\SspiCli.dll)
+CRYPTBASE.dll	A: 0x74FB0000 - 0x74FB9000	(C:\Windows\SYSTEM32\CRYPTBASE.dll)
+sechost.dll	A: 0x77260000 - 0x77294000	(C:\Windows\SYSTEM32\sechost.dll)
+bcryptPrimitives.dll	A: 0x74F50000 - 0x74FA1000	(C:\Windows\SYSTEM32\bcryptPrimitives.dll)
+IMM32.DLL	A: 0x76990000 - 0x769B0000	(C:\Windows\system32\IMM32.DLL)
+MSCTF.dll	A: 0x77510000 - 0x775ED000	(C:\Windows\SYSTEM32\MSCTF.dll)
+sscanf.DLL	A: 0x10000000 - 0x1000D000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\sscanf.DLL)
+MSVCR100.dll	A: 0x65600000 - 0x656BF000	(C:\Users\Higor-\Desktop\Repaginacao\server\MSVCR100.dll)
+CTime.DLL	A: 0x5FA40000 - 0x5FA5D000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\CTime.DLL)
+MSVCR100D.dll	A: 0x5DB00000 - 0x5DC72000	(C:\Windows\SYSTEM32\MSVCR100D.dll)
+cuf.DLL	A: 0x65DF0000 - 0x65DF6000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\cuf.DLL)
+mysql.DLL	A: 0x5FA00000 - 0x5FA3E000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\mysql.DLL)
+libmysql.dll	A: 0x56310000 - 0x5681C000	(C:\Users\Higor-\Desktop\Repaginacao\server\libmysql.dll)
+MSVCR120.dll	A: 0x5D820000 - 0x5D90E000	(C:\Windows\SYSTEM32\MSVCR120.dll)
+MSVCP120.dll	A: 0x5DA80000 - 0x5DAF1000	(C:\Windows\SYSTEM32\MSVCP120.dll)
+Secur32.dll	A: 0x71FD0000 - 0x71FD9000	(C:\Windows\SYSTEM32\Secur32.dll)
+ADVAPI32.dll	A: 0x76750000 - 0x767FE000	(C:\Windows\SYSTEM32\ADVAPI32.dll)
+napinsp.dll	A: 0x71010000 - 0x71020000	(C:\Windows\system32\napinsp.dll)
+pnrpnsp.dll	A: 0x6AAC0000 - 0x6AAD4000	(C:\Windows\system32\pnrpnsp.dll)
+NLAapi.dll	A: 0x6AAB0000 - 0x6AAC0000	(C:\Windows\system32\NLAapi.dll)
+mswsock.dll	A: 0x71F80000 - 0x71FCA000	(C:\Windows\System32\mswsock.dll)
+DNSAPI.dll	A: 0x72400000 - 0x72474000	(C:\Windows\SYSTEM32\DNSAPI.dll)
+winrnr.dll	A: 0x6AAA0000 - 0x6AAA9000	(C:\Windows\System32\winrnr.dll)
+rasadhlp.dll	A: 0x71DB0000 - 0x71DB7000	(C:\Windows\System32\rasadhlp.dll)
+streamer.DLL	A: 0x5D7D0000 - 0x5D814000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\streamer.DLL)
+VERSION.dll	A: 0x74AF0000 - 0x74AF8000	(C:\Windows\SYSTEM32\VERSION.dll)
+engine.dll	A: 0x28840000 - 0x28A6E000	(C:\Program Files (x86)\YouTube Accelerator\engine.dll)
+WININET.dll	A: 0x770A0000 - 0x77256000	(C:\Windows\SYSTEM32\WININET.dll)
+USERENV.dll	A: 0x76BA0000 - 0x76BBB000	(C:\Windows\SYSTEM32\USERENV.dll)
+PSAPI.DLL	A: 0x77900000 - 0x77906000	(C:\Windows\SYSTEM32\PSAPI.DLL)
+iertutil.dll	A: 0x77650000 - 0x7784A000	(C:\Windows\SYSTEM32\iertutil.dll)
+profapi.dll	A: 0x77850000 - 0x77861000	(C:\Windows\SYSTEM32\profapi.dll)
+xmldb.dll	A: 0x024E0000 - 0x02512000	(C:\Program Files (x86)\YouTube Accelerator\xmldb.dll)
+SHCORE.dll	A: 0x749A0000 - 0x74A13000	(C:\Windows\SYSTEM32\SHCORE.dll)
+ipc.dll	A: 0x03250000 - 0x03299000	(C:\Program Files (x86)\YouTube Accelerator\ipc.dll)
+IPHLPAPI.DLL	A: 0x72BD0000 - 0x72BF0000	(C:\Windows\SYSTEM32\IPHLPAPI.DLL)
+WINNSI.DLL	A: 0x723F0000 - 0x723F8000	(C:\Windows\SYSTEM32\WINNSI.DLL)
+uxtheme.dll	A: 0x74B70000 - 0x74BF8000	(C:\Windows\system32\uxtheme.dll)
+dwmapi.dll	A: 0x74AD0000 - 0x74AEA000	(C:\Windows\SYSTEM32\dwmapi.dll)
+helper.dll	A: 0x058A0000 - 0x058D5000	(C:\Program Files (x86)\YouTube Accelerator\helper.dll)
+
+--------------------------
+SA-MP Server: 0.3.7-R2
+
+Exception At Address: 0x77A13442 Module: (ntdll.dll)
+
+Registers:
+EAX: 0x00000024	EBX: 0x00000080	ECX: 0x00000020	EDX: 0x7FFDD000
+ESI: 0x060536D0	EDI: 0x06053708	EBP: 0x0018FBC4	ESP: 0x0018FBC4
+EFLAGS: 0x00010202
+
+Stack:
++0000: 0x0018FC04   0x00498BB8   0x00000020   0x0049F510
++0010: 0x00000000   0x06053708   0x060536D0   0x00000080
++0020: 0x616E6967   0x5C6F6163   0x0018FBD8   0x0018F604
++0030: 0x0018FE14   0x0049D208   0x004BA7F0   0xFFFFFFFF
++0040: 0x00000080   0x004991E0   0x00000000   0x00404F14
++0050: 0x00000000   0x0018FC30   0x060536D0   0x00000080
++0060: 0x0018FCD8   0x005D16DA   0x00000001   0x005B7AD8
++0070: 0x3D3038B7   0x00405802   0x00000000   0x00000080
++0080: 0x00000001   0x5FA2E2F0   0x5FA2E2CC   0x00000001
++0090: 0x0018FCC0   0x0018FC84   0x3D3038EF   0x0000000A
++00A0: 0x0018FCC0   0x5FA11CEB   0x00000000   0x00000000
++00B0: 0xFFFFFFFF   0x00000004   0x00000FEC   0x05C46BBC
++00C0: 0x0046F992   0x004F4F93   0x00000FFF   0x05FE8CE4
++00D0: 0x02812180   0x06053910   0x0018FCBC   0x02812180
++00E0: 0x0038E2FC   0x02812180   0x06053910   0x02812180
++00F0: 0x06053910   0x004057A0   0x02812180   0x003F8D5C
++0100: 0x004057B0   0x02812180   0x02812180   0x05C0D5C0
++0110: 0x00000087   0x05C459A8   0x004010B6   0x02812180
++0120: 0x06053708   0x05C5A9AC   0x00402B63   0x02812180
++0130: 0x0000009A   0x0018FD10   0x060536D0   0x0018FD5C
+
+--------------------------
+
+Loaded Modules:
+samp-server.exe	A: 0x00400000 - 0x00519000	(C:\Users\Higor-\Desktop\Repaginacao\server\samp-server.exe)
+ntdll.dll	A: 0x779D0000 - 0x77B27000	(C:\Windows\SYSTEM32\ntdll.dll)
+KERNEL32.DLL	A: 0x76C90000 - 0x76DC0000	(C:\Windows\SYSTEM32\KERNEL32.DLL)
+KERNELBASE.dll	A: 0x76BC0000 - 0x76C67000	(C:\Windows\SYSTEM32\KERNELBASE.dll)
+SHELL32.dll	A: 0x75550000 - 0x76616000	(C:\Windows\SYSTEM32\SHELL32.dll)
+USER32.dll	A: 0x76DD0000 - 0x76EE6000	(C:\Windows\SYSTEM32\USER32.dll)
+WSOCK32.dll	A: 0x66590000 - 0x66598000	(C:\Windows\SYSTEM32\WSOCK32.dll)
+WINMM.dll	A: 0x74B40000 - 0x74B61000	(C:\Windows\SYSTEM32\WINMM.dll)
+msvcrt.dll	A: 0x75490000 - 0x75541000	(C:\Windows\SYSTEM32\msvcrt.dll)
+combase.dll	A: 0x76A60000 - 0x76B96000	(C:\Windows\SYSTEM32\combase.dll)
+SHLWAPI.dll	A: 0x75150000 - 0x75190000	(C:\Windows\SYSTEM32\SHLWAPI.dll)
+GDI32.dll	A: 0x75390000 - 0x7548D000	(C:\Windows\SYSTEM32\GDI32.dll)
+WS2_32.dll	A: 0x775F0000 - 0x77640000	(C:\Windows\SYSTEM32\WS2_32.dll)
+WINMMBASE.dll	A: 0x74A20000 - 0x74A4B000	(C:\Windows\SYSTEM32\WINMMBASE.dll)
+RPCRT4.dll	A: 0x752E0000 - 0x7538C000	(C:\Windows\SYSTEM32\RPCRT4.dll)
+NSI.dll	A: 0x76740000 - 0x76748000	(C:\Windows\SYSTEM32\NSI.dll)
+cfgmgr32.dll	A: 0x774C0000 - 0x77506000	(C:\Windows\SYSTEM32\cfgmgr32.dll)
+DEVOBJ.dll	A: 0x76C70000 - 0x76C8E000	(C:\Windows\SYSTEM32\DEVOBJ.dll)
+SspiCli.dll	A: 0x74FC0000 - 0x74FDD000	(C:\Windows\SYSTEM32\SspiCli.dll)
+CRYPTBASE.dll	A: 0x74FB0000 - 0x74FB9000	(C:\Windows\SYSTEM32\CRYPTBASE.dll)
+sechost.dll	A: 0x77260000 - 0x77294000	(C:\Windows\SYSTEM32\sechost.dll)
+bcryptPrimitives.dll	A: 0x74F50000 - 0x74FA1000	(C:\Windows\SYSTEM32\bcryptPrimitives.dll)
+IMM32.DLL	A: 0x76990000 - 0x769B0000	(C:\Windows\system32\IMM32.DLL)
+MSCTF.dll	A: 0x77510000 - 0x775ED000	(C:\Windows\SYSTEM32\MSCTF.dll)
+sscanf.DLL	A: 0x10000000 - 0x1000D000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\sscanf.DLL)
+MSVCR100.dll	A: 0x65600000 - 0x656BF000	(C:\Users\Higor-\Desktop\Repaginacao\server\MSVCR100.dll)
+CTime.DLL	A: 0x5FA40000 - 0x5FA5D000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\CTime.DLL)
+MSVCR100D.dll	A: 0x5DB00000 - 0x5DC72000	(C:\Windows\SYSTEM32\MSVCR100D.dll)
+cuf.DLL	A: 0x65DF0000 - 0x65DF6000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\cuf.DLL)
+mysql.DLL	A: 0x5FA00000 - 0x5FA3E000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\mysql.DLL)
+libmysql.dll	A: 0x56310000 - 0x5681C000	(C:\Users\Higor-\Desktop\Repaginacao\server\libmysql.dll)
+MSVCR120.dll	A: 0x5D820000 - 0x5D90E000	(C:\Windows\SYSTEM32\MSVCR120.dll)
+MSVCP120.dll	A: 0x5DA80000 - 0x5DAF1000	(C:\Windows\SYSTEM32\MSVCP120.dll)
+Secur32.dll	A: 0x71FD0000 - 0x71FD9000	(C:\Windows\SYSTEM32\Secur32.dll)
+ADVAPI32.dll	A: 0x76750000 - 0x767FE000	(C:\Windows\SYSTEM32\ADVAPI32.dll)
+napinsp.dll	A: 0x71010000 - 0x71020000	(C:\Windows\system32\napinsp.dll)
+pnrpnsp.dll	A: 0x6AAC0000 - 0x6AAD4000	(C:\Windows\system32\pnrpnsp.dll)
+NLAapi.dll	A: 0x6AAB0000 - 0x6AAC0000	(C:\Windows\system32\NLAapi.dll)
+mswsock.dll	A: 0x71F80000 - 0x71FCA000	(C:\Windows\System32\mswsock.dll)
+DNSAPI.dll	A: 0x72400000 - 0x72474000	(C:\Windows\SYSTEM32\DNSAPI.dll)
+winrnr.dll	A: 0x6AAA0000 - 0x6AAA9000	(C:\Windows\System32\winrnr.dll)
+rasadhlp.dll	A: 0x71DB0000 - 0x71DB7000	(C:\Windows\System32\rasadhlp.dll)
+streamer.DLL	A: 0x5D7D0000 - 0x5D814000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\streamer.DLL)
+VERSION.dll	A: 0x74AF0000 - 0x74AF8000	(C:\Windows\SYSTEM32\VERSION.dll)
+engine.dll	A: 0x28840000 - 0x28A6E000	(C:\Program Files (x86)\YouTube Accelerator\engine.dll)
+WININET.dll	A: 0x770A0000 - 0x77256000	(C:\Windows\SYSTEM32\WININET.dll)
+USERENV.dll	A: 0x76BA0000 - 0x76BBB000	(C:\Windows\SYSTEM32\USERENV.dll)
+PSAPI.DLL	A: 0x77900000 - 0x77906000	(C:\Windows\SYSTEM32\PSAPI.DLL)
+iertutil.dll	A: 0x77650000 - 0x7784A000	(C:\Windows\SYSTEM32\iertutil.dll)
+profapi.dll	A: 0x77850000 - 0x77861000	(C:\Windows\SYSTEM32\profapi.dll)
+xmldb.dll	A: 0x02930000 - 0x02962000	(C:\Program Files (x86)\YouTube Accelerator\xmldb.dll)
+SHCORE.dll	A: 0x749A0000 - 0x74A13000	(C:\Windows\SYSTEM32\SHCORE.dll)
+ipc.dll	A: 0x03BE0000 - 0x03C29000	(C:\Program Files (x86)\YouTube Accelerator\ipc.dll)
+IPHLPAPI.DLL	A: 0x72BD0000 - 0x72BF0000	(C:\Windows\SYSTEM32\IPHLPAPI.DLL)
+WINNSI.DLL	A: 0x723F0000 - 0x723F8000	(C:\Windows\SYSTEM32\WINNSI.DLL)
+uxtheme.dll	A: 0x74B70000 - 0x74BF8000	(C:\Windows\system32\uxtheme.dll)
+dwmapi.dll	A: 0x74AD0000 - 0x74AEA000	(C:\Windows\SYSTEM32\dwmapi.dll)
+helper.dll	A: 0x05870000 - 0x058A5000	(C:\Program Files (x86)\YouTube Accelerator\helper.dll)
+
+--------------------------
+SA-MP Server: 0.3.7-R2
+
+Exception At Address: 0x77A13442 Module: (ntdll.dll)
+
+Registers:
+EAX: 0x00000024	EBX: 0x00000080	ECX: 0x00000020	EDX: 0x7FFDD000
+ESI: 0x061086D0	EDI: 0x06108708	EBP: 0x0018FBC4	ESP: 0x0018FBC4
+EFLAGS: 0x00010202
+
+Stack:
++0000: 0x0018FC04   0x00498BB8   0x00000020   0x0049F510
++0010: 0x00000000   0x06108708   0x061086D0   0x00000080
++0020: 0x616E6967   0x5C6F6163   0x0018FBD8   0x0018F604
++0030: 0x0018FE14   0x0049D208   0x004BA7F0   0xFFFFFFFF
++0040: 0x00000080   0x004991E0   0x00000000   0x00404F14
++0050: 0x00000000   0x0018FC30   0x061086D0   0x00000080
++0060: 0x0018FCD8   0x0063B452   0x00000001   0x005F0A88
++0070: 0xD4DCC84A   0x00405802   0x00000000   0x00000080
++0080: 0x00000001   0x5FA2E2F0   0x5FA2E2CC   0x00000001
++0090: 0x0018FCC0   0x0018FC84   0xD4DCC812   0x0000000A
++00A0: 0x0018FCC0   0x5FA11CEB   0x00000000   0x00000000
++00B0: 0xFFFFFFFF   0x00000004   0x00000FEC   0x05CFBBBC
++00C0: 0x0046F992   0x004F4F93   0x00000FFF   0x0609DCE4
++00D0: 0x02942180   0x06108910   0x0018FCBC   0x02942180
++00E0: 0x0038E2FC   0x02942180   0x06108910   0x02942180
++00F0: 0x06108910   0x004057A0   0x02942180   0x003F8D5C
++0100: 0x004057B0   0x02942180   0x02942180   0x05CC25C0
++0110: 0x00000087   0x05CFA9A8   0x004010B6   0x02942180
++0120: 0x06108708   0x05D0F9AC   0x00402B63   0x02942180
++0130: 0x0000009A   0x0018FD10   0x061086D0   0x0018FD5C
+
+--------------------------
+
+Loaded Modules:
+samp-server.exe	A: 0x00400000 - 0x00519000	(C:\Users\Higor-\Desktop\Repaginacao\server\samp-server.exe)
+ntdll.dll	A: 0x779D0000 - 0x77B27000	(C:\Windows\SYSTEM32\ntdll.dll)
+KERNEL32.DLL	A: 0x76C90000 - 0x76DC0000	(C:\Windows\SYSTEM32\KERNEL32.DLL)
+KERNELBASE.dll	A: 0x76BC0000 - 0x76C67000	(C:\Windows\SYSTEM32\KERNELBASE.dll)
+SHELL32.dll	A: 0x75550000 - 0x76616000	(C:\Windows\SYSTEM32\SHELL32.dll)
+USER32.dll	A: 0x76DD0000 - 0x76EE6000	(C:\Windows\SYSTEM32\USER32.dll)
+WSOCK32.dll	A: 0x66590000 - 0x66598000	(C:\Windows\SYSTEM32\WSOCK32.dll)
+WINMM.dll	A: 0x74B40000 - 0x74B61000	(C:\Windows\SYSTEM32\WINMM.dll)
+msvcrt.dll	A: 0x75490000 - 0x75541000	(C:\Windows\SYSTEM32\msvcrt.dll)
+combase.dll	A: 0x76A60000 - 0x76B96000	(C:\Windows\SYSTEM32\combase.dll)
+SHLWAPI.dll	A: 0x75150000 - 0x75190000	(C:\Windows\SYSTEM32\SHLWAPI.dll)
+GDI32.dll	A: 0x75390000 - 0x7548D000	(C:\Windows\SYSTEM32\GDI32.dll)
+WS2_32.dll	A: 0x775F0000 - 0x77640000	(C:\Windows\SYSTEM32\WS2_32.dll)
+WINMMBASE.dll	A: 0x74A20000 - 0x74A4B000	(C:\Windows\SYSTEM32\WINMMBASE.dll)
+RPCRT4.dll	A: 0x752E0000 - 0x7538C000	(C:\Windows\SYSTEM32\RPCRT4.dll)
+NSI.dll	A: 0x76740000 - 0x76748000	(C:\Windows\SYSTEM32\NSI.dll)
+cfgmgr32.dll	A: 0x774C0000 - 0x77506000	(C:\Windows\SYSTEM32\cfgmgr32.dll)
+DEVOBJ.dll	A: 0x76C70000 - 0x76C8E000	(C:\Windows\SYSTEM32\DEVOBJ.dll)
+SspiCli.dll	A: 0x74FC0000 - 0x74FDD000	(C:\Windows\SYSTEM32\SspiCli.dll)
+CRYPTBASE.dll	A: 0x74FB0000 - 0x74FB9000	(C:\Windows\SYSTEM32\CRYPTBASE.dll)
+sechost.dll	A: 0x77260000 - 0x77294000	(C:\Windows\SYSTEM32\sechost.dll)
+bcryptPrimitives.dll	A: 0x74F50000 - 0x74FA1000	(C:\Windows\SYSTEM32\bcryptPrimitives.dll)
+IMM32.DLL	A: 0x76990000 - 0x769B0000	(C:\Windows\system32\IMM32.DLL)
+MSCTF.dll	A: 0x77510000 - 0x775ED000	(C:\Windows\SYSTEM32\MSCTF.dll)
+sscanf.DLL	A: 0x10000000 - 0x1000D000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\sscanf.DLL)
+MSVCR100.dll	A: 0x65600000 - 0x656BF000	(C:\Users\Higor-\Desktop\Repaginacao\server\MSVCR100.dll)
+CTime.DLL	A: 0x5FA40000 - 0x5FA5D000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\CTime.DLL)
+MSVCR100D.dll	A: 0x5DB00000 - 0x5DC72000	(C:\Windows\SYSTEM32\MSVCR100D.dll)
+cuf.DLL	A: 0x65DF0000 - 0x65DF6000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\cuf.DLL)
+mysql.DLL	A: 0x5FA00000 - 0x5FA3E000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\mysql.DLL)
+libmysql.dll	A: 0x56310000 - 0x5681C000	(C:\Users\Higor-\Desktop\Repaginacao\server\libmysql.dll)
+MSVCR120.dll	A: 0x5D820000 - 0x5D90E000	(C:\Windows\SYSTEM32\MSVCR120.dll)
+MSVCP120.dll	A: 0x5DA80000 - 0x5DAF1000	(C:\Windows\SYSTEM32\MSVCP120.dll)
+Secur32.dll	A: 0x71FD0000 - 0x71FD9000	(C:\Windows\SYSTEM32\Secur32.dll)
+ADVAPI32.dll	A: 0x76750000 - 0x767FE000	(C:\Windows\SYSTEM32\ADVAPI32.dll)
+napinsp.dll	A: 0x71010000 - 0x71020000	(C:\Windows\system32\napinsp.dll)
+pnrpnsp.dll	A: 0x6AAC0000 - 0x6AAD4000	(C:\Windows\system32\pnrpnsp.dll)
+NLAapi.dll	A: 0x6AAB0000 - 0x6AAC0000	(C:\Windows\system32\NLAapi.dll)
+mswsock.dll	A: 0x71F80000 - 0x71FCA000	(C:\Windows\System32\mswsock.dll)
+DNSAPI.dll	A: 0x72400000 - 0x72474000	(C:\Windows\SYSTEM32\DNSAPI.dll)
+winrnr.dll	A: 0x6AAA0000 - 0x6AAA9000	(C:\Windows\System32\winrnr.dll)
+rasadhlp.dll	A: 0x71DB0000 - 0x71DB7000	(C:\Windows\System32\rasadhlp.dll)
+streamer.DLL	A: 0x5D7D0000 - 0x5D814000	(C:\Users\Higor-\Desktop\Repaginacao\server\plugins\streamer.DLL)
+VERSION.dll	A: 0x74AF0000 - 0x74AF8000	(C:\Windows\SYSTEM32\VERSION.dll)
+engine.dll	A: 0x28840000 - 0x28A6E000	(C:\Program Files (x86)\YouTube Accelerator\engine.dll)
+WININET.dll	A: 0x770A0000 - 0x77256000	(C:\Windows\SYSTEM32\WININET.dll)
+USERENV.dll	A: 0x76BA0000 - 0x76BBB000	(C:\Windows\SYSTEM32\USERENV.dll)
+PSAPI.DLL	A: 0x77900000 - 0x77906000	(C:\Windows\SYSTEM32\PSAPI.DLL)
+iertutil.dll	A: 0x77650000 - 0x7784A000	(C:\Windows\SYSTEM32\iertutil.dll)
+profapi.dll	A: 0x77850000 - 0x77861000	(C:\Windows\SYSTEM32\profapi.dll)
+xmldb.dll	A: 0x02280000 - 0x022B2000	(C:\Program Files (x86)\YouTube Accelerator\xmldb.dll)
+SHCORE.dll	A: 0x749A0000 - 0x74A13000	(C:\Windows\SYSTEM32\SHCORE.dll)
+ipc.dll	A: 0x02B20000 - 0x02B69000	(C:\Program Files (x86)\YouTube Accelerator\ipc.dll)
+IPHLPAPI.DLL	A: 0x72BD0000 - 0x72BF0000	(C:\Windows\SYSTEM32\IPHLPAPI.DLL)
+WINNSI.DLL	A: 0x723F0000 - 0x723F8000	(C:\Windows\SYSTEM32\WINNSI.DLL)
+uxtheme.dll	A: 0x74B70000 - 0x74BF8000	(C:\Windows\system32\uxtheme.dll)
+dwmapi.dll	A: 0x74AD0000 - 0x74AEA000	(C:\Windows\SYSTEM32\dwmapi.dll)
+helper.dll	A: 0x05890000 - 0x058C5000	(C:\Program Files (x86)\YouTube Accelerator\helper.dll)
+
+--------------------------
+SA-MP Server: 0.3.7-R2
+
+Exception At Address: 0x76DE7862 Module: (ntdll.dll)
+
+Registers:
+EAX: 0x00000024	EBX: 0x00000080	ECX: 0x004E5998	EDX: 0x05D5EF00
+ESI: 0x00000024	EDI: 0x00000020	EBP: 0x0012F728	ESP: 0x0012F714
+EFLAGS: 0x00010212
+
+Stack:
++0000: 0x05D5EF00   0x05D5EE68   0x00405600   0x012EDD78
++0010: 0x012EDD78   0x0012F768   0x00498BB8   0x00000020
++0020: 0x0049F510   0x00000000   0x05D5EF00   0x05D5EE68
++0030: 0x00000080   0x6E696761   0x6F616361   0x0012F73C
++0040: 0x0012F1CC   0x0012FB4C   0x0049D208   0x004BA7F0
++0050: 0xFFFFFFFF   0x00000080   0x004991E0   0x00000000
++0060: 0x00404F14   0x00000000   0x0012F794   0x05D5EE68
++0070: 0x00000080   0x0012F83C   0x0012F804   0x00000001
++0080: 0x0012F804   0x00000001   0x00405802   0x00000000
++0090: 0x00000080   0x00000001   0x00000001   0x00000001
++00A0: 0x0012F7E0   0x75039312   0x00000000   0x00000100
++00B0: 0x0012F804   0x00000001   0x0012F804   0x00000001
++00C0: 0x00000010   0x00000073   0x00000001   0x00000001
++00D0: 0x0012F808   0x768C3C5C   0x0012F810   0x00000001
++00E0: 0x00000000   0x0012F804   0x00000002   0x00000009
++00F0: 0x00000073   0x00000000   0x004061B4   0x00000073
++0100: 0x0040650C   0x00000001   0x004057A0   0x012EDD78
++0110: 0x004BDB7C   0x004057B0   0x012EDD78   0x012EDD78
++0120: 0x05890550   0x00000087   0x058A101C   0x004010B6
++0130: 0x012EDD78   0x05D5EF00   0x058A1384   0x00402B63
+
+--------------------------
+
+Loaded Modules:
+samp-server.exe	A: 0x00400000 - 0x00519000	(C:\Users\Cliente\Desktop\Repaginacao\server\samp-server.exe)
+ntdll.dll	A: 0x76DA0000 - 0x76EE1000	(C:\Windows\SYSTEM32\ntdll.dll)
+kernel32.dll	A: 0x76750000 - 0x76824000	(C:\Windows\system32\kernel32.dll)
+KERNELBASE.dll	A: 0x75030000 - 0x7507B000	(C:\Windows\system32\KERNELBASE.dll)
+SHELL32.dll	A: 0x751A0000 - 0x75DEB000	(C:\Windows\system32\SHELL32.dll)
+msvcrt.dll	A: 0x76F40000 - 0x76FEC000	(C:\Windows\system32\msvcrt.dll)
+SHLWAPI.dll	A: 0x75130000 - 0x75187000	(C:\Windows\system32\SHLWAPI.dll)
+GDI32.dll	A: 0x766E0000 - 0x7672E000	(C:\Windows\system32\GDI32.dll)
+USER32.dll	A: 0x768B0000 - 0x76979000	(C:\Windows\system32\USER32.dll)
+LPK.dll	A: 0x75E00000 - 0x75E0A000	(C:\Windows\system32\LPK.dll)
+USP10.dll	A: 0x75EB0000 - 0x75F4D000	(C:\Windows\system32\USP10.dll)
+WSOCK32.dll	A: 0x5F350000 - 0x5F357000	(C:\Windows\system32\WSOCK32.dll)
+WS2_32.dll	A: 0x76EF0000 - 0x76F25000	(C:\Windows\system32\WS2_32.dll)
+RPCRT4.dll	A: 0x76410000 - 0x764B2000	(C:\Windows\system32\RPCRT4.dll)
+NSI.dll	A: 0x76F30000 - 0x76F36000	(C:\Windows\system32\NSI.dll)
+WINMM.dll	A: 0x731F0000 - 0x73222000	(C:\Windows\system32\WINMM.dll)
+IMM32.DLL	A: 0x75110000 - 0x7512F000	(C:\Windows\system32\IMM32.DLL)
+MSCTF.dll	A: 0x76610000 - 0x766DC000	(C:\Windows\system32\MSCTF.dll)
+sscanf.DLL	A: 0x10000000 - 0x1000D000	(C:\Users\Cliente\Desktop\Repaginacao\server\plugins\sscanf.DLL)
+MSVCR100.dll	A: 0x72170000 - 0x7222F000	(C:\Users\Cliente\Desktop\Repaginacao\server\MSVCR100.dll)
+CTime.DLL	A: 0x72B10000 - 0x72B2D000	(C:\Users\Cliente\Desktop\Repaginacao\server\plugins\CTime.DLL)
+MSVCR100D.dll	A: 0x61660000 - 0x617D3000	(C:\Windows\system32\MSVCR100D.dll)
+cuf.DLL	A: 0x73AB0000 - 0x73AB6000	(C:\Users\Cliente\Desktop\Repaginacao\server\plugins\cuf.DLL)
+mysql.DLL	A: 0x72260000 - 0x7229E000	(C:\Users\Cliente\Desktop\Repaginacao\server\plugins\mysql.DLL)
+libmysql.dll	A: 0x56850000 - 0x56D5C000	(C:\Users\Cliente\Desktop\Repaginacao\server\libmysql.dll)
+Secur32.dll	A: 0x74B00000 - 0x74B08000	(C:\Windows\system32\Secur32.dll)
+SSPICLI.DLL	A: 0x74C40000 - 0x74C5B000	(C:\Windows\system32\SSPICLI.DLL)
+ADVAPI32.dll	A: 0x75E10000 - 0x75EB0000	(C:\Windows\system32\ADVAPI32.dll)
+sechost.dll	A: 0x76730000 - 0x76749000	(C:\Windows\SYSTEM32\sechost.dll)
+MSVCR120.dll	A: 0x64A10000 - 0x64AFE000	(C:\Windows\system32\MSVCR120.dll)
+MSVCP120.dll	A: 0x65EF0000 - 0x65F61000	(C:\Windows\system32\MSVCP120.dll)
+NLAapi.dll	A: 0x73040000 - 0x73050000	(C:\Windows\system32\NLAapi.dll)
+napinsp.dll	A: 0x65C20000 - 0x65C30000	(C:\Windows\system32\napinsp.dll)
+pnrpnsp.dll	A: 0x65C00000 - 0x65C12000	(C:\Windows\system32\pnrpnsp.dll)
+mswsock.dll	A: 0x74790000 - 0x747CC000	(C:\Windows\System32\mswsock.dll)
+DNSAPI.dll	A: 0x74650000 - 0x74694000	(C:\Windows\system32\DNSAPI.dll)
+winrnr.dll	A: 0x65BD0000 - 0x65BD8000	(C:\Windows\System32\winrnr.dll)
+rasadhlp.dll	A: 0x6F870000 - 0x6F876000	(C:\Windows\system32\rasadhlp.dll)
+streamer.DLL	A: 0x65EA0000 - 0x65EE4000	(C:\Users\Cliente\Desktop\Repaginacao\server\plugins\streamer.DLL)
+wshtcpip.dll	A: 0x742D0000 - 0x742D5000	(C:\Windows\System32\wshtcpip.dll)
+IPHLPAPI.DLL	A: 0x72C00000 - 0x72C1C000	(C:\Windows\system32\IPHLPAPI.DLL)
+WINNSI.DLL	A: 0x72BF0000 - 0x72BF7000	(C:\Windows\system32\WINNSI.DLL)
+wship6.dll	A: 0x74780000 - 0x74786000	(C:\Windows\System32\wship6.dll)

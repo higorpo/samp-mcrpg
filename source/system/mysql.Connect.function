@@ -1,0 +1,60 @@
+
+
+
+/*                                                            ____      _____  _____    ____
+                                                    |\    /| /      /\  |    \ |    \  /
+                                                    | \  / | |      \/  |      |       |
+                                                    |  \/  | |          |____/ |____/  |  ___
+                                                    |      | |      /\  |    | |       |     |
+                                                    |      | \____  \/  |    | |       \_____/
+                                                                        
+                -----------------------------------------------------------------------------------------------------------------
+                |                                                                                                               |
+                |                                                                                                               |
+                |               Nome: Configurações de conexão do MySQL                                                         |
+                |          Descrição: Configura a conexão do banco de dados MySQL                                               |
+                |   Última alteração: 11/05/2016 - 16:19                                                                        |
+                |               Type: footer                                                                                    |
+                |                                                                                                               |
+                |                                                                                                               |
+                ---------------------------------------------------------------------------------------------------------------*/
+
+/* Enums e variaveis */
+enum 
+{
+    connect,
+    close
+}
+
+new mysqlConnect; // Handle de conexão do mySql.
+
+
+//-----------------------------------------------------------------------------
+
+
+mysql(option) // Função
+{
+    if(option == connect) /*   Caso for: mysql(connect);   */
+    {
+        #include "system\mysql.Config.ini"
+        mysqlConnect = mysql_connect(configsMySQL[0][host], configsMySQL[0][user], configsMySQL[0][database], configsMySQL[0][password], configsMySQL[0][port], configsMySQL[0][reconnect], configsMySQL[0][pool_size]);
+        if(mysql_errno(mysqlConnect) != 0)
+        {
+            printfc(CONSOLE_RED, "* ERROR: O banco de dados '%s' nao foi encontrado!", configsMySQL[0][database]);
+            SendRconCommand("changemode server.Error");
+            return 0;
+        }
+        else
+        {
+            printfc(CONSOLE_GREEN, "* SUCESS: O banco de dados foi encontrado com sucesso.\n\
+                Informacoes da conexao: Banco de dados '%s' - User '%s'", configsMySQL[0][database], configsMySQL[0][user]);
+            return 1;
+        }
+    }
+    else if(option == close)
+    {
+        mysql_close(mysqlConnect);
+        printfc(CONSOLE_BLUE, "* SUCESS: O banco de dados '%s' foi desconectado.", configsMySQL[0][database]);
+    }
+    return 1;
+}

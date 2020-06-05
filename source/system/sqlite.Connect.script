@@ -1,0 +1,46 @@
+
+
+
+/*                                                            ____      _____  _____    ____
+                                                    |\    /| /      /\  |    \ |    \  /
+                                                    | \  / | |      \/  |      |       |
+                                                    |  \/  | |          |____/ |____/  |  ___
+                                                    |      | |      /\  |    | |       |     |
+                                                    |      | \____  \/  |    | |       \_____/
+                                                                        
+                -----------------------------------------------------------------------------------------------------------------
+                |                                                                                                               |
+                |                                                                                                               |
+                |               Nome: Configurações de conexão do SQLite                                                        |
+                |          Descrição: Configura a conexão do banco de dados SQLite                                              |
+                |   Última alteração: 11/05/2016 - 20:12                                                                        |
+                |               Type: none                                                                                      |
+                |                                                                                                               |
+                |                                                                                                               |
+                ---------------------------------------------------------------------------------------------------------------*/
+
+/* Include necessária para o funcionamento do script. */
+#include "inc\YSI\y_hooks"
+
+
+/* Variaveis*/
+new DB:sqliteConnect;
+
+
+//--------------------------------------------------------
+
+
+/* Funções */
+hook OnGameModeInit()
+{
+    sqliteConnect = db_open("database.db");
+    printc(CONSOLE_GREEN, "* SUCESS: Banco de dados SQLite 'database.db' encontrado e carregado com sucesso!");
+    return 1;
+}
+
+hook OnGameModeExit()
+{
+    db_close(sqliteConnect);
+    printc(CONSOLE_BLUE, "* SUCESS: Banco de dados SQLite 'database.db' foi desconectado!");
+    return 1;
+}

@@ -1,0 +1,13 @@
+#include "..\..\inc\YSI\y_hooks"
+
+hook OnGameModeInit()
+{
+	yeeah__mysql(connect);
+	return 1;
+}
+
+hook OnGameModeExit()
+{
+	yeeah__mysql(close);
+	return 1;
+}
